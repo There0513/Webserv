@@ -15,6 +15,8 @@ namespace HDE {
             void    handler();
             void    responder();
 
+            httpRequest     requests;
+
         public:
             testServer();
             void    launch();
