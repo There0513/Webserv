@@ -5,19 +5,20 @@
 # include <vector>
 
 class httpRequest
-{
+{   // tests
     private:
-        // method    -> first line
-        // url       -> first line
-        // version   -> first line
+        std::string method;     // -> first line
+        std::string url;        // -> first line
+        std::string version;    // -> first line
 
 	    std::vector<std::pair<std::string, std::string > >  header;
         // body
 
-    	std::map<long, std::string>                         requests; // <socket, bufferstring>
+    	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
 
     public:
         httpRequest(std::string buffer, long socket);
+        httpRequest();
         ~httpRequest();
 };
 

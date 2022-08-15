@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include "SimpleServer.hpp"
+#include "httpRequest.hpp"
+
 
 namespace HDE {
 
@@ -15,7 +17,7 @@ namespace HDE {
             void    handler();
             void    responder();
 
-            httpRequest     requests;
+            httpRequest     requests();
 
         public:
             testServer();
