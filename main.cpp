@@ -10,20 +10,24 @@ int main(int ac, char **av) {
     std::string path = av[1]; 
     ConfigFile  cf(path);
 
-    std::vector<std::string> port = cf.getValue("server", "listen");
-    std::cout << "port = " << port[0] << std::endl;
+    std::cout << cf.findServer("80") << std::endl;
+
+    std::cout << cf.findUrl("80", "/uploads") << std::endl;
+
+    // std::vector<std::string> port = cf.getValue("server1", "listen");
+    // std::cout << "port = " << port[0] << std::endl;
     
-    std::vector<std::string> server_name = cf.getValue("server", "server_name");
-    std:: cout << "server_name = " << server_name[1] << std::endl;
+    // std::vector<std::string> server_name = cf.getValue("server1", "server_name");
+    // std:: cout << "server_name = " << server_name[1] << std::endl;
 
-    std::vector<std::string> root = cf.getValue("server", "root");
-    std:: cout << "root = " << root[0] << std::endl;
+    // std::vector<std::string> root = cf.getValue("server1", "root");
+    // std:: cout << "root = " << root[0] << std::endl;
 
-    std::vector<std::string> error_page = cf.getValue("server", "error_page");
-    std::cout << "error_page = " << error_page[0] << std::endl;
+    // std::vector<std::string> error_page = cf.getValue("server1", "error_page");
+    // std::cout << "error_page = " << error_page[0] << std::endl;
 
-    std::vector<std::string> methods = cf.getValue("location/", "authorized_methods");
-    std::cout << "authorized_methods = " << methods[0] << std::endl;
+    // std::vector<std::string> methods = cf.getValue("location", "authorized_methods");
+    // std::cout << "authorized_methods = " << methods[0] << std::endl;
 
     return (0);
 }
