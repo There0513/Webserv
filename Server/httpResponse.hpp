@@ -12,6 +12,8 @@ class   httpResponse
     public:
         httpResponse();
         ~httpResponse();
+        void        setPageContent(std::string content);
+        std::string getPageContent();
 };
 
 #endif

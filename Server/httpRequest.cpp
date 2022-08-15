@@ -1,4 +1,6 @@
 #include "httpRequest.hpp"
+#include <fstream>
+#include <sstream> // ostringstream
 
 httpRequest::httpRequest(std::string buffer, long socket) {
     std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
@@ -12,3 +14,15 @@ httpRequest::httpRequest(std::string buffer, long socket) {
 
 httpRequest::httpRequest(void) {}
 httpRequest::~httpRequest() {}
+//https://www.tutorialspoint.com/Read-whole-ASCII-file-into-Cplusplus-std-string
+std::string     httpRequest::readFileContent() {
+    std::ifstream       data;
+    std::ostringstream  buffer;
+
+    data.open(url);
+    if (!data)
+        std::cout << "Error: file could not be opened." << std::endl;
+    buffer << data.rdbuf();  // reading data
+    data.close();
+    return buffer.str();
+}

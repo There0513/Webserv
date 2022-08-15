@@ -8,7 +8,7 @@ class httpRequest
 {   // tests
     private:
         std::string method;     // -> first line
-        std::string url;        // -> first line
+        std::string url = "../www/index.html";        // -> first line
         std::string version;    // -> first line
 
 	    std::vector<std::pair<std::string, std::string > >  header;
@@ -20,6 +20,8 @@ class httpRequest
         httpRequest(std::string buffer, long socket);
         httpRequest();
         ~httpRequest();
+
+        std::string     readFileContent();
 };
 
 #endif

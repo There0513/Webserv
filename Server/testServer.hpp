@@ -15,7 +15,7 @@ namespace HDE {
             int     newSocket;
             void    accepter();
             void    handler();
-            void    responder();
+            void    responder(std::string content);
 
             httpRequest     requests();
 

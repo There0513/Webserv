@@ -24,7 +24,7 @@ namespace HDE {
             ListeningSocket *socket;
             virtual void accepter() = 0;
             virtual void handler() = 0;
-            virtual void responder() = 0;
+            virtual void responder(std::string content) = 0;
 
         public:
             SimpleServer(int domain, int service, int protocol, int port, u_long interface, int bklog);

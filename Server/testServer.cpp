@@ -1,6 +1,7 @@
 #include "testServer.hpp"
 #include "httpRequest.hpp"
 #include "httpResponse.hpp"
+#include "httpResponse.cpp"
 #include <fcntl.h>
 /*
 needed structure to handle request part:
@@ -48,25 +49,37 @@ void    HDE::testServer::accepter() {
 }
 
 void    HDE::testServer::handler() {
+    httpResponse        response;
         /* if ret <= 0
             close(newSocket)
             FD_CLR(newSocket, &fd_set);       FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
             erase newSocket from sockets-map and restart loop through socket-map */
         // else:
             httpRequest request(buffer, newSocket);    // parse request-string into 'httpRequest request'
-    // httpResponse    response;   // prepare response
+    // read content of file e.g.:
+    response.setPageContent(request.readFileContent());
+    // prepare response:
+    responder(response.getPageContent());
 }
 
-void    HDE::testServer::responder() {
+void    HDE::testServer::responder(std::string content) {
     // process the request - create response
     // handle method (GET POST DELETE)
+    std::string answer = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length:";
+    answer+= std::to_string(content.length());
+    answer+= "\n\n";
+    answer+= content;
 
-    char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
+
+    // add "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\n"... in front of content
+    // char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
     //  WRITE
     // send response
-    write(newSocket, hello, strlen(hello));
+    std::cout << "answer = \n" << answer << "\nend\n" << std::endl;
+    // write(newSocket, hello, strlen(hello));
+    write(newSocket, answer.c_str(), answer.size());
     //  CLOSE
-    close(newSocket);
+    // close(newSocket);
 }
 
 void    HDE::testServer::launch() {
@@ -76,7 +89,7 @@ void    HDE::testServer::launch() {
         std::cout << "====== Waiting for the connection =====" << std::endl;
         accepter();
         handler();
-        responder();
+        // responder(); // called in handler()
         std::cout << "===== Done =====" << std::endl;
     }
     
