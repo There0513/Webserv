@@ -60,13 +60,16 @@ void    HDE::testServer::handler() {
     // read content of file e.g.:
     response.setPageContent(request.readFileContent());
     // prepare response:
-    responder(response.getPageContent());
+    responder(response.getPageContent(), request.getContentType());
 }
 
-void    HDE::testServer::responder(std::string content) {
+void    HDE::testServer::responder(std::string content, std::string contentType) {
     // process the request - create response
     // handle method (GET POST DELETE)
-    std::string answer = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length:";
+    // std::cout << "page-content = |" << content << "|" << std::endl;
+    std::string answer = "HTTP/1.1 200 OK\nContent-Type: ";
+    answer+= contentType;
+    answer+= "; charset=UTF-8\nContent-Length:";
     answer+= std::to_string(content.length());
     answer+= "\n\n";
     answer+= content;
@@ -76,11 +79,11 @@ void    HDE::testServer::responder(std::string content) {
     // char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
     //  WRITE
     // send response
-    std::cout << "answer = \n" << answer << "\nend\n" << std::endl;
+    std::cout << "answer = |" << answer << "|\nend\n" << std::endl;
     // write(newSocket, hello, strlen(hello));
     write(newSocket, answer.c_str(), answer.size());
     //  CLOSE
-    // close(newSocket);
+    close(newSocket);
 }
 
 void    HDE::testServer::launch() {

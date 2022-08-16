@@ -7,11 +7,12 @@
 class httpRequest
 {   // tests
     private:
-        std::string method;     // -> first line
-        std::string url = "../www/index.html";        // -> first line
-        std::string version;    // -> first line
+        std::string _method;     // -> first line
+        std::string _url;        // -> first line
+        std::string _version;    // -> first line
 
-	    std::vector<std::pair<std::string, std::string > >  header;
+	    // std::vector<std::pair<std::string, std::string > >  header;
+        std::string _contentType;
         // body
 
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
@@ -23,7 +24,11 @@ class httpRequest
 
         std::string     readFileContent();
         void            parseRequest(std::string buffer);
-        void            splitString(std::string str, std::string deli);
+        void            getFirstLine(std::string str, std::string deli);
+
+
+        void        setContentType(std::string type);
+        std::string getContentType();
 };
 
 #endif
