@@ -22,6 +22,8 @@ class httpRequest
         ~httpRequest();
 
         std::string     readFileContent();
+        void            parseRequest(std::string buffer);
+        void            splitString(std::string str, std::string deli);
 };
 
 #endif
