@@ -58,15 +58,13 @@ ConfigFile::ConfigFile(std::string const & configFile) {
         if (line.empty() || line[0] == '#' || line[0] == '}')
             continue;
 
-        //check if line defines a section 
+        //check if line defines a section and assign the path to the section
         if (line[0] == '[') {
             _inSection = trim(line.substr(1, line.find(']') -1));
-            if (!_inSection.compare("server")) //assign a number to the server to be differentiate if there are several
+            if (!_inSection.compare("server")) 
                 _inSection.assign("server" + std::to_string(++flag));
-            if (!strncmp(_inSection.c_str(), "location", 8)) { // build the location path vector 
-                _locationPath.push_back("server" + std::to_string(flag) + "/" + _inSection);
-                _inSection.assign("server" + std::to_string(flag) + "/location");
-            }
+            if (!strncmp(_inSection.c_str(), "location", 8)) 
+                _inSection.assign("server" + std::to_string(flag) + "/" + _inSection);
             continue; }
 
         //store the part before the '=' in _directive, and the part after in a vector
@@ -82,11 +80,27 @@ ConfigFile::ConfigFile(std::string const & configFile) {
 
 std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() const { return _content; }
 
-std::vector<std::string> const & ConfigFile::getValue(std::string const & section, std::string const & entry) const {
+std::string ConfigFile::getSection(std::string const & port, std::string const & url, std::string const & directive) {
 
-    std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(section + '/' + entry);
+    std::string server = findServer(port);
+    std::string str;
+
+    if (!url.compare(""))
+        str = server + "/" + directive;
+    else
+        str = server + "/location" + url + "/" + directive;
+    
+    return str;
+}
+
+std::vector<std::string> const & ConfigFile::getValue(std::string const & port, std::string const & url, std::string const & directive) {
+
+    std::string str = getSection(port, url, directive);
+    
+    std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
+    
     if (it == _content.end())
-        throw "does not exists";
+        throw "Value not found";
     return it->second;
 }
 
@@ -101,12 +115,26 @@ std::string     ConfigFile::findServer(std::string const & port) {
     throw "Port not found";
 }
 
-std::string     ConfigFile::findUrl(std::string const & port, std::string const & url) {
+std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
-    std::string server = findServer(port);
-    std::string str = server + "/location" + url;
+    std::string str = getSection(port, url, "root");
 
-    if (std::find(_locationPath.begin(), _locationPath.end(), str) != _locationPath.end())
-        return _content[server + "/location" + "/root"][0];
-    throw "url not found";
+    std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
+
+    if (it == _content.end())
+        throw "url not found";
+    return _content[str][0] + url;
+}
+
+bool            ConfigFile::isMethodAllowed(std::string const & port, std::string const & url, std::string const & method) {
+
+    std::string str = getSection(port, url, "authorized_methods");
+    
+    std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
+
+    for (; it != _content.rend(); it++)
+        if (it->first.find(str) != std::string::npos 
+            && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
+            return 1;
+    return 0;
 }
