@@ -22,6 +22,7 @@ needed structure to handle request part:
         - read into buffer
         - create httpRequest (parsing)
         - check if valid ()
+        - what kind of content we are going to send? html/js/png/... -> add Content-Type: text/html ...
         - 'create' location 'folder/index.html' with root (ROOT/folder/index.html)  | handle alias etc.
         - check for index/autoindex/create index.html file content in page_content variable as string if index not found (+ autoindex on)
         - check for query parameters (ex GET: values visible in URL: '/Register.html&user=john&login=jonny')
