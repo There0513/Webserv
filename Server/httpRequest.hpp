@@ -23,6 +23,7 @@ class httpRequest
         ~httpRequest();
 
         std::string     readFileContent();
+        void            findContentType();
         void            parseRequest(std::string buffer);
         void            getFirstLine(std::string str, std::string deli);
 

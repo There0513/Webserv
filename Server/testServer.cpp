@@ -59,6 +59,7 @@ void    HDE::testServer::handler() {
             httpRequest request(buffer, newSocket);    // parse request-string into 'httpRequest request'
     // read content of file e.g.:
     response.setPageContent(request.readFileContent());
+    request.findContentType();
     // prepare response:
     responder(response.getPageContent(), request.getContentType());
 }
@@ -75,12 +76,9 @@ void    HDE::testServer::responder(std::string content, std::string contentType)
     answer+= content;
 
 
-    // add "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\n"... in front of content
-    // char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
     //  WRITE
     // send response
     std::cout << "answer = |" << answer << "|\nend\n" << std::endl;
-    // write(newSocket, hello, strlen(hello));
     write(newSocket, answer.c_str(), answer.size());
     //  CLOSE
     close(newSocket);

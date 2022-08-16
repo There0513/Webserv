@@ -23,8 +23,11 @@ std::string     httpRequest::readFileContent() {
 
     std::cout << "_url.size(): " << _url.size() << "_url in readFileContent: |" << _url << "|\n";
     data.open(_url);
-    if (!data)
-        std::cout << "Error: " << _url << " could not be opened." << std::endl;
+    if (!data) {
+        std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
+        _url = "www/errorPages/404notfound.html";
+        data.open(_url);
+    }
     buffer << data.rdbuf();  // reading data
     data.close();
     return buffer.str();
@@ -58,8 +61,7 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
     // std::cout << "\nsplit: " << str.substr(start, end - start);
 }
 
-void    httpRequest::parseRequest(std::string buffer) {
-    getFirstLine(buffer);
+void    httpRequest::findContentType() {
 	_contentType = _url.substr(_url.rfind(".") + 1, _url.size() - _url.rfind("."));
     std::cout << "_contentType: " << _contentType << std::endl;
     if (_contentType == "html")
@@ -77,6 +79,10 @@ void    httpRequest::parseRequest(std::string buffer) {
 	else
 		_contentType = "text/plain";
     std::cout << "_contentType: " << _contentType << std::endl;
+}
+
+void    httpRequest::parseRequest(std::string buffer) {
+    getFirstLine(buffer);
 }
 
 
