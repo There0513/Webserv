@@ -5,18 +5,22 @@
 #include <fcntl.h>
 /*
 needed structure to handle request part:
+CONFIG CLASS:
     - from configuration file:
         - host + port
         - root directory
+    LOCATION CLASS(?!):
         - locations             map<string, locationClass(with all informations inside? index,methods etc)>
+                /   alias   locRoot index   auto    method  upload  redirection
         - default error pages   map<int, string>
         - max client body size
         - 301 redirection
         - upload option
         - autoindex option
+  SERVER CLASS:
     - map with all servers ('server_map') map<fd, server> to iterate through for (read/write to process the servers requests)
     - loop through server_map to connect (accept etc.) + save sockets of each (in map of sockets?!)
-    - each server inside server_map has it's own requests, addr, fd's, listen variables
+    - each server inside server_map has it's own requests, addr, fd's, listen variables config
 
     - loop through sockets (sockets_map)
         - read into buffer
