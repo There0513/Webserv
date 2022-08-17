@@ -13,6 +13,7 @@ namespace HDE {
         private:
             char    buffer[30000] = {0};
             int     newSocket;
+            long    _ret;    // return of read()
             void    accepter();
             void    handler();
             void    responder(std::string content, std::string contentType);

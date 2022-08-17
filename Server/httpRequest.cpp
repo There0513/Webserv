@@ -21,7 +21,6 @@ std::string     httpRequest::readFileContent() {
     std::ifstream       data;
     std::ostringstream  buffer;
 
-    std::cout << "_url.size(): " << _url.size() << "_url in readFileContent: |" << _url << "|\n";
     data.open(_url);
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
@@ -50,6 +49,11 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
         _version = str.substr(start, end - start).substr(5, 4);
     if (_url.size() <= 1)
             _url = "index.html";
+    // add root
+    // if root in config.file:
+    std::string tmp_root = "www";  // from config.file
+    _url = tmp_root + "/" + _url;
+
     std::cout << "_method: " << _method << std::endl;
     std::cout << "_url: " << _url << std::endl;
     std::cout << "_version: " << _version << std::endl;
@@ -86,10 +90,11 @@ void    httpRequest::parseRequest(std::string buffer) {
 }
 
 
-
+/* SETTERS - GETTERS */
 
 
 void   httpRequest::setContentType(std::string type) {
+    _contentType = type;
 }
 
 std::string httpRequest::getContentType() {

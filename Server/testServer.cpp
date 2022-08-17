@@ -35,9 +35,32 @@ CONFIG CLASS:
     - response:
         - send response with send or write
 
+- POST: content-type + content-lenght needed
+Le body pour GET et DELETE ça sert à rien
+    on peut considérer la requête comme parsée dès qu’on a fini de mettre les headers
+Pour POST on peut mettre une query pour un formulaire ou le contenu d’un texte à générer
+
+
+while clients.fd
+{
+    if client ready to read {   FD_ISSET(..)
+        read/recv
+        parse
+        check if valid
+    }
+    if client ready to write {  FD_ISSET(..)
+
+    }
+    else {
+        ... do not time out
+    }
+}
+
 
 */
-HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10) { launch(); }
+HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10) {
+    launch();
+}
 
 void    HDE::testServer::accepter() {
 
@@ -50,12 +73,12 @@ void    HDE::testServer::accepter() {
     // }
 // read the clients request:
   // if ready to READ      ->  if FD_ISSET(newSocket, readingSet)     // ft_set readingSet -> arg in select(.., &readingSet, &writingSet, .., ..)
-    long ret = read(newSocket, buffer, 30000); // read or recv
+    _ret = read(newSocket, buffer, 30000); // read or recv
 }
 
 void    HDE::testServer::handler() {
     httpResponse        response;
-        /* if ret <= 0
+        /* if _ret <= 0
             close(newSocket)
             FD_CLR(newSocket, &fd_set);       FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
             erase newSocket from sockets-map and restart loop through socket-map */
@@ -73,6 +96,7 @@ void    HDE::testServer::responder(std::string content, std::string contentType)
     // handle method (GET POST DELETE)
     // std::cout << "page-content = |" << content << "|" << std::endl;
     std::string answer = "HTTP/1.1 200 OK\nContent-Type: ";
+    // add code + code description
     answer+= contentType;
     answer+= "; charset=UTF-8\nContent-Length:";
     answer+= std::to_string(content.length());
@@ -82,7 +106,7 @@ void    HDE::testServer::responder(std::string content, std::string contentType)
 
     //  WRITE
     // send response
-    std::cout << "answer = |" << answer << "|\nend\n" << std::endl;
+    std::cout << "answer = [" << answer << "]\n" << std::endl;
     write(newSocket, answer.c_str(), answer.size());
     //  CLOSE
     close(newSocket);
