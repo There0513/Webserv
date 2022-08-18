@@ -76,18 +76,72 @@ void    HDE::testServer::accepter() {
     _ret = read(newSocket, buffer, 30000); // read or recv
 }
 
+            /* handle methods */
+void    GETMethod() {
+    // check for cgi
+    // if !cgi:
+        // find resource    handle path (location, root, ...)
+        // check if file exists with stat()
+        // if path == directory
+            // dirStream = opendir()    // handle error if !opendir()
+            // find index.html via readdir(dirStream) + append path + filename
+                // if !index.html -> closedir(dirStream) -> check if autoindex + generate repsponse
+            // closedir(dirStream);
+
+            // open file
+
+
+    // handle cgi
+}
+
+void    POSTMethod() {
+    // check for cgi
+    // if !cgi:
+        // check for upload file
+            // if !
+                // error -> post req not accepted
+            // if upload file:
+                // check content-type form
+                    // 'form-data' upload:
+                        // handle upload - create file etc
+
+        // create a file with raw data from body
+
+
+    // handle cgi
+}
+
+void    DELETEMethod() {
+    // handle path
+    // remove path data
+    // create response  or error handling if remove didn't work
+}
+
 void    HDE::testServer::handler() {
     httpResponse        response;
-        if (_ret <= 0) {
-            close(newSocket);
-            // FD_CLR(newSocket, &fd_set); //      FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
-            // handle error (INTERNAL_SERVER_ERROR = 500)
-                // generate response with error page with or without auto
-           // erase newSocket from sockets-map and restart loop through socket-map
-           return;
-        }
-        //else ret >= 1:
+
+    if (_ret <= 0) {
+        close(newSocket);
+        // FD_CLR(newSocket, &fd_set); //      FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
+        // handle error (INTERNAL_SERVER_ERROR = 500)
+            // generate response with error page with or without auto
+        // erase newSocket from sockets-map and restart loop through socket-map
+        return;
+    }
+    //else ret >= 1:
     httpRequest request(buffer, newSocket);    // parse request-string into 'httpRequest request'
+    // parsing done - handle methods here if get else if ....
+    ;
+
+    if (request.getMethod()[0] == 'G')
+        GETMethod();
+    else if (request.getMethod()[0] == 'P')
+        POSTMethod();
+    else if (request.getMethod()[0] == 'D')
+        DELETEMethod();
+    else
+        std::cout << "not get not post not delete." << std::endl;
+    // before methods
     response.setPageContent(request.readFileContent());
     request.findContentType();
     // prepare response:

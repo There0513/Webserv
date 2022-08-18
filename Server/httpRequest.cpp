@@ -8,9 +8,14 @@ httpRequest::httpRequest(std::string buffer, long socket) {
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
     // parse buffer (method, url, version, headerFields, body) -> add header:
     parseRequest(buffer);
+    // check if valid (here or directly in parseRequest)
+
     // find url-corresponding route
     // check if request is valid (http version, host, method(valid one + allowed in config.file + if POST: content-length header))
-    // redirection?
+    // if redirection configured
+        // set redirection status code
+        // create response
+    // else -> handle method-function (GET, POST, DELETE)
 }
 
 httpRequest::httpRequest(void) {}
@@ -72,6 +77,7 @@ void    httpRequest::parseHeader(std::string buffer) {
     while pos != std::string::npos  // while /n/r or /n/r is not last elem
         line = getLine() + delete in buffer actual line;
             if line == empty -> end of header/begin of body
+            if no 'Content-Length -> no need to parse body I think +++
         else
             split line with delimiter = ":" -> get key + val from line // ex:  Host localhost:8080
             if key == host -> setHost = val
@@ -80,7 +86,16 @@ void    httpRequest::parseHeader(std::string buffer) {
     */
 }
 
+/*  chunked:
+Data is sent in a series of chunks. The Content-Length header is omitted in this case and at the beginning of each chunk you
+need to add the length of the current chunk in hexadecimal format, followed by '\r\n' and then the chunk itself, followed by
+another '\r\n'. The terminating chunk is a regular chunk, with the exception that its length is zero. It is followed by the
+trailer, which consists of a (possibly empty) sequence of header fields.
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding */
 void    httpRequest::parseBody() {
+    // if 'Content-Length' check if parseBody needed +++
+    // check if "Transfer-Encoding"
+    // check 'chunked'
     // https://stackoverflow.com/questions/24625620/how-should-http-server-respond-to-head-request-for-chunked-encoding
 }
 
@@ -111,6 +126,9 @@ void    httpRequest::parseRequest(std::string buffer) {
 }
 
 
+
+
+
 /* SETTERS - GETTERS */
 
 
@@ -120,4 +138,12 @@ void   httpRequest::setContentType(std::string type) {
 
 std::string httpRequest::getContentType() {
     return _contentType;
+}
+
+void    httpRequest::setMethod(std::string method) {
+    _method = method;
+}
+
+std::string httpRequest::getMethod() {
+    return _method;
 }

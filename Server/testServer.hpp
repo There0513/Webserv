@@ -20,6 +20,11 @@ namespace HDE {
 
             httpRequest     requests();
 
+            /* handle methods */
+            void    getMethod();
+            void    postMethod();
+            void    deleteMethod();
+
         public:
             testServer();
             void    launch();

@@ -30,8 +30,15 @@ class httpRequest
         void            parseBody();
 
 
+
+
+/* SETTERS - GETTERS */
+
         void        setContentType(std::string type);
         std::string getContentType();
+
+        void        setMethod(std::string method);
+        std::string getMethod();
 };
 
 #endif
