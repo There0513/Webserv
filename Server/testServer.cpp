@@ -69,7 +69,7 @@ void    HDE::testServer::accepter() {
     newSocket = accept(getSocket()->getsock(), (struct sockaddr *)&address, (socklen_t *)&addrlen);
     // if (newSocket != -1) {
     //     fcntl(newSocket, F_SETFL, O_NONBLOCK); // subject: "However, you are allowed to use fcntl() only as follows: fcntl(fd, F_SETFL, O_NONBLOCK);"
-    //     // FD_SET(newSocket, &_fd_set);
+    //     FD_SET(newSocket, &_fd_set); // put _fd_set in class
     // }
 // read the clients request:
   // if ready to READ      ->  if FD_ISSET(newSocket, readingSet)     // ft_set readingSet -> arg in select(.., &readingSet, &writingSet, .., ..)
@@ -78,13 +78,16 @@ void    HDE::testServer::accepter() {
 
 void    HDE::testServer::handler() {
     httpResponse        response;
-        /* if _ret <= 0
-            close(newSocket)
-            FD_CLR(newSocket, &fd_set);       FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
-            erase newSocket from sockets-map and restart loop through socket-map */
-        // else:
-            httpRequest request(buffer, newSocket);    // parse request-string into 'httpRequest request'
-    // read content of file e.g.:
+        if (_ret <= 0) {
+            close(newSocket);
+            // FD_CLR(newSocket, &fd_set); //      FD_CLR() removes a given file descriptor from a set (https://linux.die.net/man/3/fd_clr) fd_set is a fixed size buffer
+            // handle error (INTERNAL_SERVER_ERROR = 500)
+                // generate response with error page with or without auto
+           // erase newSocket from sockets-map and restart loop through socket-map
+           return;
+        }
+        //else ret >= 1:
+    httpRequest request(buffer, newSocket);    // parse request-string into 'httpRequest request'
     response.setPageContent(request.readFileContent());
     request.findContentType();
     // prepare response:

@@ -49,9 +49,8 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
         _version = str.substr(start, end - start).substr(5, 4);
     if (_url.size() <= 1)
             _url = "index.html";
-    // add root
-    // if root in config.file:
-    std::string tmp_root = "www";  // from config.file
+    // if root in config.file -> add root:
+    std::string tmp_root = "www";  // getRoot() from config.file
     _url = tmp_root + "/" + _url;
 
     std::cout << "_method: " << _method << std::endl;
@@ -63,6 +62,26 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
     //     end = str.find(deli, start);
     // }
     // std::cout << "\nsplit: " << str.substr(start, end - start);
+}
+
+void    httpRequest::parseHeader(std::string buffer) {
+    size_t  pos;
+
+    /*
+    pos = get
+    while pos != std::string::npos  // while /n/r or /n/r is not last elem
+        line = getLine() + delete in buffer actual line;
+            if line == empty -> end of header/begin of body
+        else
+            split line with delimiter = ":" -> get key + val from line // ex:  Host localhost:8080
+            if key == host -> setHost = val
+            push into header vector from httpRequest
+
+    */
+}
+
+void    httpRequest::parseBody() {
+    // https://stackoverflow.com/questions/24625620/how-should-http-server-respond-to-head-request-for-chunked-encoding
 }
 
 void    httpRequest::findContentType() {
@@ -87,6 +106,8 @@ void    httpRequest::findContentType() {
 
 void    httpRequest::parseRequest(std::string buffer) {
     getFirstLine(buffer);
+    parseHeader(buffer);
+    parseBody();
 }
 
 

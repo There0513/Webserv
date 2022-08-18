@@ -26,6 +26,8 @@ class httpRequest
         void            findContentType();
         void            parseRequest(std::string buffer);
         void            getFirstLine(std::string str, std::string deli);
+        void            parseHeader(std::string buffer);
+        void            parseBody();
 
 
         void        setContentType(std::string type);
