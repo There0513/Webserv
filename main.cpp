@@ -7,8 +7,12 @@ int main(int ac, char **av) {
         return (1); 
     }
 
+    std::cout << std::endl;
+
     std::string path = av[1]; 
     ConfigFile  cf(path);
+
+    std::cout << std::endl;
 
     try {
 
@@ -46,6 +50,12 @@ int main(int ac, char **av) {
         std::vector<std::string> methods443 = cf.getValue("localhost:80", "/app", "authorized_methods");
         std::cout << "authorized_methods = " << methods443[1] << std::endl;
 
+        std::vector<std::string> upload = cf.getValue("localhost:443", "", "upload_path");
+        std::cout << "upload path = " << upload[0] << std::endl;
+
+        std::vector<std::string> redir = cf.getValue("localhost:443", "/uploads", "redirection");
+        std::cout << "redir = " << redir[0] << std::endl;
+
         std::vector<std::string> ghost = cf.getValue("localhost:80", "/appa", "authorized_methods");
         std::cout << "authorized_methods = " << ghost[0] << std::endl;
     }
@@ -55,5 +65,6 @@ int main(int ac, char **av) {
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << e.what() << std::endl;
     }
+    std::cout << std::endl;
     return (0);
 }
