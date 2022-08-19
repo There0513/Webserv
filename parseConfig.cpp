@@ -43,10 +43,23 @@ std::string     ConfigFile::checkErrorConfig(void) {
 
     std::map<std::string, std::vector<std::string> >::iterator  it = _content.begin();
 
+//Check possible syntax errors in the location block
+    if (_content.find("//") != _content.end())
+        return ("Config File Error: Wrong syntax in the location block");
+    
     for (; it != _content.end(); it++)
     {
-        if (it->second.empty() || (it->second.size() > 1 && it->first.substr(it->first.find_last_of("/"), it->first.length())))
-        std::cout << it->second[0] << std::endl;
+        //Check if there is the right nb of values for the directive
+        if (it->second.empty() || (it->second.size() > 1 
+            && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "authorized_methods"
+            && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "server_name"))
+            return ("Config File Error: Too many values for directive");
+        
+        //Check if the port is well configured
+        if (it->first.find("listen") != std::string::npos) {
+            if (std::count(it->second[0].begin(), it->second[0].end(), ':') != 1)
+                return ("Config File Error: Wrong port syntax");
+        }
     }
     return "rien";
 }
@@ -90,7 +103,7 @@ ConfigFile::ConfigFile(std::string const & configFile) {
                 _inSection.assign("server" + std::to_string(++flag));
             else if (!_inSection.compare("location/")) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
-            else if (!strncmp(_inSection.c_str(), "location", 8)) 
+            else if (!strncmp(_inSection.c_str(), "location/", 9)) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection);
             else {
                 std::cout << "Config File Error: Wrong block nomination" << std::endl;
