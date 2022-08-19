@@ -61,7 +61,7 @@ std::string     ConfigFile::checkErrorConfig(void) {
                 return ("Config File Error: Wrong port syntax");
         }
     }
-    return "rien";
+    return "Config File: ready to be parsed";
 }
 
 //Check if the directive is allowed
@@ -136,8 +136,10 @@ std::string ConfigFile::getSection(std::string const & port, std::string const &
 
     if (!url.compare(""))
         str = server + directive; 
+    else if (!url.compare("/"))
+        str = server + "location" + url + directive; 
     else
-        str = server + "location" + url + directive;
+        str = server + "location" + url + "/" + directive;
     return str;
 }
 
@@ -145,6 +147,7 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
 
     std::string str = getSection(port, url, directive);
 
+    std::cout << str << std::endl;
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
     if (it == _content.end())
