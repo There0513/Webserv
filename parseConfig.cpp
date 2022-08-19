@@ -86,17 +86,16 @@ std::string ConfigFile::getSection(std::string const & port, std::string const &
     std::string str;
 
     if (!url.compare(""))
-        str = server + "/" + directive;
+        str = server + directive;
     else
-        str = server + "/location" + url + "/" + directive;
-    
+        str = server + "location" + url + "/" + directive;
     return str;
 }
 
 std::vector<std::string> const & ConfigFile::getValue(std::string const & port, std::string const & url, std::string const & directive) {
 
     std::string str = getSection(port, url, directive);
-    
+
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
     if (it == _content.end())
@@ -104,26 +103,115 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
     return it->second;
 }
 
-std::string     ConfigFile::findServer(std::string const & port) {
+bool    ConfigFile::isLocalIP(std::string const & listen, std::string const & host) {
 
-    std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
+    static int specificIP = 0;
+    int lislen = listen.length();
+    int hostlen = host.length();
+    int portPos = listen.find(":") + 1;
+    int portPosHost = host.find(":") + 1;
+    std::string hostPort = host.substr(portPosHost, hostlen - portPosHost);
 
-    for (; it != _content.rend(); it++)
-        if (it->first.find("listen") != std::string::npos 
-            && !port.compare(it->second[0]))
-            return it->first.substr(0, it->first.find("/"));
+    if (!listen.compare(host)) {
+        specificIP++;
+        return true;
+    }
+    else if (!listen.compare(portPos, lislen - portPos, hostPort)
+            && specificIP == 0) 
+        return true;
+    return false;
+}
+
+std::string     ConfigFile::defineHost(std::string str) {
+
+//  does the host specify both IP and port ?
+
+//  yes
+    if (str.find(":") != std::string::npos) 
+        return str;
+
+//  it does not specify the port: set the default port to 8080
+    else if (str.find(".") != std::string::npos)
+        return (str + ":8080");
+
+//  it does not specify the IP: set the generic address 0.0.0.0
+    else
+        return ("0.0.0.0:" + str);
+}
+
+bool     ConfigFile::sameServerName(std::vector<std::string> server_name, std::string const & host) {
+
+    std::vector<std::string>::reverse_iterator  rit = server_name.rbegin();
+
+    for (; rit != server_name.rend(); rit++) {
+        if (!host.compare(0, host.find(":"), *rit))
+            return true;
+    }
+    return false;
+}
+
+bool     ConfigFile::isCandidateServer(std::vector<std::string> servers, std::string const & testServ) {
+
+    std::vector<std::string>::reverse_iterator  rit = servers.rbegin();
+    std::string server = testServ.substr(0, testServ.find("/"));
+
+    for (; rit != servers.rend(); rit++) {
+        if (!server.compare(*rit));
+            return true;
+    }
+    return false;
+}
+
+std::string     ConfigFile::findServer(std::string const & host) {
+
+    std::map<std::string, std::vector<std::string> >::iterator it = _content.begin();
+    std::vector<std::string>    candidateServers;
+
+// complete listen of the config file if information is missing
+    for (; it != _content.end(); it++) 
+        if (it->first.find("listen") != std::string::npos) 
+            it->second[0] = defineHost(it->second[0]);
+
+//  compare host of the request and listen of the config file and push the candidate servers in a vector
+    it  = _content.begin();
+    for (; it != _content.end(); it++) {
+
+        if (isLocalIP(it->second[0], host) == true)
+            candidateServers.push_back(it->first.substr(0, it->first.find("/") + 1));
+    }
+//  if there is only one candidate server, return it
+    if (candidateServers.size() == 1)
+        return candidateServers[0];
+
+//  if there are multiple candidate servers with the same level of specificity
+//  compare server names and return the first one to match IP+port+server_name
+//  or the first one (default one) in case they are all the same
+    if (candidateServers.size() > 1) {
+
+        it  = _content.begin();
+        for (; it != _content.end(); it++) {
+
+            if (it->first.find("server_name") != std::string::npos) {
+
+                if (sameServerName(it->second, host) == true
+                    && isCandidateServer(candidateServers, it->first) == true)
+                        return it->first.substr(0, it->first.find("/") + 1);
+            }
+        }
+        it = _content.begin();
+        for (; it != _content.end(); it++) {
+
+            if (it->first.find("server_name") != std::string::npos)
+                return it->first.substr(0, it->first.find("/") + 1);
+        }
+    }
     throw "Port not found";
+
 }
 
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
-    std::string str = getSection(port, url, "root");
-
-    std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
-
-    if (it == _content.end())
-        throw "url not found";
-    return _content[str][0] + url;
+    return (getValue(port, url, "root")[0] + url);
 }
 
 bool            ConfigFile::isMethodAllowed(std::string const & port, std::string const & url, std::string const & method) {
@@ -133,8 +221,8 @@ bool            ConfigFile::isMethodAllowed(std::string const & port, std::strin
     std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
 
     for (; it != _content.rend(); it++)
-        if (it->first.find(str) != std::string::npos 
+        if (it->first.find(str) != std::string::npos
             && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
-            return 1;
-    return 0;
+            return true;
+    return false;
 }
