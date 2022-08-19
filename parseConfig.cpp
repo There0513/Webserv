@@ -38,6 +38,31 @@ std::vector<std::string>    fillVector(std::string const & value) {
     return vector;
 }
 
+//Check if there are any errors in the config file
+std::string     ConfigFile::checkErrorConfig(void) {
+
+    std::map<std::string, std::vector<std::string> >::iterator  it = _content.begin();
+
+    for (; it != _content.end(); it++)
+    {
+        if (it->second.empty() || (it->second.size() > 1 && it->first.substr(it->first.find_last_of("/"), it->first.length())))
+        std::cout << it->second[0] << std::endl;
+    }
+    return "rien";
+}
+
+//Check if the directive is allowed
+bool    ConfigFile::checkDirective(std::string dir) {
+
+    if (dir.find("location") != std::string::npos)
+        dir.substr(dir.find_last_of("/"), dir.length());
+
+    std::vector<std::string>    listOfDir = {"listen", "server_name", "root", "error_page", "client_max_body_size", "index", "autoindex", "cgi_pass", "authorized_methods"};
+
+    if (std::find(listOfDir.begin(), listOfDir.end(), dir) != listOfDir.end())
+        return true;
+    return false;
+}
 
 ConfigFile::ConfigFile(std::string const & configFile) {
 
@@ -63,19 +88,30 @@ ConfigFile::ConfigFile(std::string const & configFile) {
             _inSection = trim(line.substr(1, line.find(']') -1));
             if (!_inSection.compare("server")) 
                 _inSection.assign("server" + std::to_string(++flag));
-            if (!strncmp(_inSection.c_str(), "location", 8)) 
+            else if (!_inSection.compare("location/")) 
+                _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
+            else if (!strncmp(_inSection.c_str(), "location", 8)) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection);
+            else {
+                std::cout << "Config File Error: Wrong block nomination" << std::endl;
+                exit(0);
+            }
             continue; }
 
         //store the part before the '=' in _directive, and the part after in a vector
         posEqual = line.find('=');
         _directive = trim(line.substr(0, posEqual));
+        if (!checkDirective(_directive)) {
+            std::cout << "Config File Error: Wrong directive" << std::endl;
+            exit(0);
+        }
         value = trim(line.substr(posEqual + 1, line.length() - _directive.length() - 2));
         _valuesVec = fillVector(value);
 
         //store the pair of _directive + vector of values in the map
         _content[_inSection + '/' + _directive] = _valuesVec;
     }
+    std::cout << checkErrorConfig() << std::endl; 
 }
 
 std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() const { return _content; }
@@ -86,9 +122,9 @@ std::string ConfigFile::getSection(std::string const & port, std::string const &
     std::string str;
 
     if (!url.compare(""))
-        str = server + directive;
+        str = server + directive; 
     else
-        str = server + "location" + url + "/" + directive;
+        str = server + "location" + url + directive;
     return str;
 }
 
@@ -99,7 +135,7 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
     if (it == _content.end())
-        throw "Value not found";
+        throw ValueNotFoundException();
     return it->second;
 }
 
@@ -205,13 +241,17 @@ std::string     ConfigFile::findServer(std::string const & host) {
                 return it->first.substr(0, it->first.find("/") + 1);
         }
     }
-    throw "Port not found";
-
+    throw ServerNotFoundException();
 }
 
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
-    return (getValue(port, url, "root")[0] + url);
+    try {
+        return (getValue(port, url, "root")[0] + url);
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        return (getValue(port, "", "root")[0] + url);
+    }
 }
 
 bool            ConfigFile::isMethodAllowed(std::string const & port, std::string const & url, std::string const & method) {

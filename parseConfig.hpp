@@ -23,8 +23,10 @@ class ConfigFile {
         std::string     defineHost(std::string str);
         bool            isLocalIP(std::string const & listen, std::string const & host); // A function to check if the IP address of the request matches our local IP
         bool            sameServerName(std::vector<std::string> server_name, std::string const & host);
-        bool            isCandidateServer(std::vector<std::string> servers, std::string const & testServ);
+        bool            isCandidateServer(std::vector<std::string> servers, std::string const & testServ);  
 
+        bool            checkDirective(std::string);
+        std::string     checkErrorConfig(void);
 
     public:
             //Constructor
@@ -37,6 +39,21 @@ class ConfigFile {
             std::string     findPath(std::string const & port, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root
             bool            isMethodAllowed(std::string const & port, std::string const & url, std::string const & method); // A function to check if the required method is allowed
 
+            class   ValueNotFoundException : public std::exception {
+
+                public:
+                    virtual const char *what() const throw() {
+                        return ("Error: Value not found");
+                    }
+            };
+
+            class  ServerNotFoundException : public std::exception {
+
+                public:
+                    virtual const char *what() const throw() {
+                        return ("Error: Server not found");
+                    }
+            };
 };
 
 #endif
