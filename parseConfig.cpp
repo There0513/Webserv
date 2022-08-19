@@ -26,11 +26,9 @@ ConfigFile::ConfigFile(std::string const & configFile) {
 
     while (std::getline(file, line)) {
 
-        // REMOVE WHITESPACES
-        line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end()); 
+        line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end()); // REMOVE WHITESPACES
 
-        // SKIP LINE IF IT IS EMPTY OR COMMENTED
-        if (line.empty() || line[0] == '#' || line[0] == '}') 
+        if (line.empty() || line[0] == '#' || line[0] == '}') // SKIP LINE IF IT IS EMPTY OR COMMENTED
             continue;
 
         // CHECK IF LINE DEFINES A SECTION AND ASSIGN PATH TO THE SECTION
@@ -66,11 +64,73 @@ ConfigFile::ConfigFile(std::string const & configFile) {
         value = trim(line.substr(posEqual + 1, line.length() - _directive.length() - 2));
         _valuesVec = fillVector(value);
 
-        // STORE THE PAIR OF _DIRECTIVE + _VALUESVEC IN THE MAP
-        _content[_inSection + '/' + _directive] = _valuesVec; 
+        _content[_inSection + '/' + _directive] = _valuesVec; // STORE THE PAIR OF _DIRECTIVE + _VALUESVEC IN THE MAP
 
     }
     checkErrorConfig(); 
+}
+
+// ========================================================= GETTERS AND MEMBER FUNCTIONS TO INTERACT WITH =============================================================
+
+// GET MAP
+std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() const { 
+    
+    return _content; 
+}
+
+// GET BLOCK NAME
+std::string ConfigFile::getSection(std::string const & port, std::string const & url, std::string const & directive) {
+
+    std::string server = findServer(port);
+    std::string str;
+
+    if (!url.compare(""))
+        str = server + directive; 
+    else if (!url.compare("/"))
+        str = server + "location" + url + directive; 
+    else
+        str = server + "location" + url + "/" + directive;
+
+    return str;
+}
+
+// GET VALUE (SECOND PART OF THE PAIR IN THE MAP)
+std::vector<std::string> const & ConfigFile::getValue(std::string const & port, std::string const & url, std::string const & directive) {
+
+    std::string str = getSection(port, url, directive);
+
+    std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
+    
+    if (it == _content.end())
+        throw ValueNotFoundException();
+    return it->second;
+}
+
+// FIND PATH TO THE FILES INSIDE THE SERVER 
+std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
+
+    try {
+
+        return (getValue(port, url, "root")[0] + url);
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+
+        return (getValue(port, "", "root")[0] + url);
+    }
+}
+
+// DETERMINE IF THE REQUESTED METHOD IS ALLOWED 
+bool            ConfigFile::isMethodAllowed(std::string const & port, std::string const & url, std::string const & method) {
+
+    std::string str = getSection(port, url, "authorized_methods");
+    
+    std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
+
+    for (; it != _content.rend(); it++)
+        if (it->first.find(str) != std::string::npos
+            && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
+            return true;
+    return false;
 }
 
 // ================================== FIND THE RIGHT SERVER TO SERVE THE REQUEST ======================================
@@ -260,7 +320,7 @@ bool    ConfigFile::checkDirective(std::string dir) {
 // ===================================================== UTILS ===========================================================
 
 //  TRIM 
-std::string trim(std::string const & source, char const *delims = "\t\r\n") {
+std::string                 ConfigFile::trim(std::string const & source, char const *delims) {
 
     std::string result(source);
     std::string::size_type  index = result.find_last_of(delims);
@@ -279,7 +339,7 @@ std::string trim(std::string const & source, char const *delims = "\t\r\n") {
 }
 
 // TOKENIZE THE STRING BY | AND ;
-std::vector<std::string>    fillVector(std::string const & value) {
+std::vector<std::string>    ConfigFile::fillVector(std::string const & value) {
 
     std::vector<std::string> vector;
     char                     val[value.length() + 1];

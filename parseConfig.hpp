@@ -45,6 +45,10 @@ class ConfigFile {
         bool            checkDirective(std::string); // A function to check errors in directives
         void            checkErrorConfig(void); // A function to check errors in the config file 
 
+        //utils
+        std::string                 trim(std::string const & source, char const *delims = "\t\r\n");
+        std::vector<std::string>    fillVector(std::string const & value);
+
     public:
             //Constructor
             ConfigFile(std::string const & configFile);
