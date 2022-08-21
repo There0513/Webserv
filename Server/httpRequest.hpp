@@ -11,8 +11,8 @@ class httpRequest
         std::string _url;        // -> first line
         std::string _version;    // -> first line
 
-	    // std::vector<std::pair<std::string, std::string > >  header;
-        std::string _contentType;
+	    std::vector<std::pair<std::string, std::string > >  _header;
+        // std::string _contentType;
         // body
 
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
@@ -29,13 +29,22 @@ class httpRequest
         void            parseHeader(std::string buffer);
         void            parseBody();
 
+        int             isValid();
+
+        /* handle methods */
+        void    GETMethod();
+        void    POSTMethod();
+        void    DELETEMethod();
 
 
 
 /* SETTERS - GETTERS */
 
-        void        setContentType(std::string type);
-        std::string getContentType();
+        void        setUrl(std::string url);
+        std::string getUrl();
+
+        // void        setContentType(std::string type);
+        // std::string getContentType();
 
         void        setMethod(std::string method);
         std::string getMethod();

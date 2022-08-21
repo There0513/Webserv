@@ -1,19 +1,47 @@
-#include <unistd.h>
-#include <stdio.h>
+#include "parseConfig.hpp"
 
 int main(int ac, char **av) {
 
     if (ac != 2) {
-        cout << "ERROR: Wrong number of arguments\n" << endl; 
+        std::cout << "ERROR: Wrong number of arguments\n" << std::endl; 
         return (1); 
     }
 
-    try {
-        parseConfig(av[1]);
-    }
-    catch {
-        cerr << "ERROR: not able to parse file" << endl;
-    }
+    std::string path = av[1]; 
+    ConfigFile  cf(path);
+
+    std::cout << cf.findPath("example.org:80", "/uploads") << std::endl;
+
+    std::cout << cf.isMethodAllowed("localhost:80", "/uploads", "GET") << std::endl;
+
+    std::vector<std::string> port = cf.getValue("localhost:80", "", "listen");
+    std::cout << "port = " << port[0] << std::endl;
+    
+    std::vector<std::string> server_name = cf.getValue("localhost:80", "", "server_name");
+    std:: cout << "server_name = " << server_name[1] << std::endl;
+
+    std::vector<std::string> root = cf.getValue("localhost:80", "/uploads", "root");
+    std:: cout << "root = " << root[0] << std::endl;
+
+    std::vector<std::string> error_page = cf.getValue("localhost:80", "" , "error_page");
+    std::cout << "error_page = " << error_page[0] << std::endl;
+
+    std::vector<std::string> methods = cf.getValue("localhost:80", "/app", "authorized_methods");
+    std::cout << "authorized_methods = " << methods[0] << std::endl;
+
+    std::vector<std::string> methods1 = cf.getValue("localhost:80", "/", "authorized_methods");
+    std::cout << "authorized_methods = " << methods1[0] << std::endl;
+
+    std::cout << cf.findPath("localhost:443", "/uploads") << std::endl;
+
+    std::cout << cf.isMethodAllowed("localhost:443", "/uploads", "DELETE") << std::endl;
+    std::cout << cf.isMethodAllowed("localhost:443", "/uploads", "POST") << std::endl;
+
+    std::vector<std::string> root443 = cf.getValue("localhost:443", "/uploads", "root");
+    std:: cout << "root = " << root443[0] << std::endl;
+
+    std::vector<std::string> methods443 = cf.getValue("localhost:80", "/app", "authorized_methods");
+    std::cout << "authorized_methods = " << methods443[1] << std::endl;
 
     return (0);
 }

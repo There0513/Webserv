@@ -7,6 +7,7 @@ httpRequest::httpRequest(std::string buffer, long socket) {
 	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
     // parse buffer (method, url, version, headerFields, body) -> add header:
+
     parseRequest(buffer);
     // check if valid (here or directly in parseRequest)
 
@@ -55,7 +56,7 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
     if (_url.size() <= 1)
             _url = "index.html";
     // if root in config.file -> add root:
-    std::string tmp_root = "www";  // getRoot() from config.file
+    std::string tmp_root = "www";                                       // getRoot() from config.file
     _url = tmp_root + "/" + _url;
 
     std::cout << "_method: " << _method << std::endl;
@@ -81,7 +82,7 @@ void    httpRequest::parseHeader(std::string buffer) {
         else
             split line with delimiter = ":" -> get key + val from line // ex:  Host localhost:8080
             if key == host -> setHost = val
-            push into header vector from httpRequest
+            push into _header vector from httpRequest
 
     */
 }
@@ -99,24 +100,12 @@ void    httpRequest::parseBody() {
     // https://stackoverflow.com/questions/24625620/how-should-http-server-respond-to-head-request-for-chunked-encoding
 }
 
-void    httpRequest::findContentType() {
-	_contentType = _url.substr(_url.rfind(".") + 1, _url.size() - _url.rfind("."));
-    std::cout << "_contentType: " << _contentType << std::endl;
-    if (_contentType == "html")
-		_contentType = "text/html";
-	else if (_contentType == "png")
-		_contentType = "image/png";
-	else if (_contentType == "css")
-		_contentType = "text/css";
-	else if (_contentType == "jpeg" || _contentType == "jpg")
-		_contentType = "image/jpeg";
-	else if (_contentType == "js")
-		_contentType = "text/javascript";
-	else if (_contentType == "bmp")
-		_contentType = "image/bmp";
-	else
-		_contentType = "text/plain";
-    std::cout << "_contentType: " << _contentType << std::endl;
+int     httpRequest::isValid() {
+    // method allowed
+    // http version
+    // min/max length content
+    // etc
+    return 1;   // all good
 }
 
 void    httpRequest::parseRequest(std::string buffer) {
@@ -131,14 +120,21 @@ void    httpRequest::parseRequest(std::string buffer) {
 
 /* SETTERS - GETTERS */
 
+ void       httpRequest::setUrl(std::string url) {
+    _url = url;
+ }
 
-void   httpRequest::setContentType(std::string type) {
-    _contentType = type;
+std::string httpRequest::getUrl() {
+    return _url;
 }
 
-std::string httpRequest::getContentType() {
-    return _contentType;
-}
+// void   httpRequest::setContentType(std::string type) {
+//     _contentType = type;
+// }
+
+// std::string httpRequest::getContentType() {
+//     return _contentType;
+// }
 
 void    httpRequest::setMethod(std::string method) {
     _method = method;

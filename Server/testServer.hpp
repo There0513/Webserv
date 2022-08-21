@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "SimpleServer.hpp"
+#include "Client.hpp"
 #include "httpRequest.hpp"
 
 
@@ -11,19 +12,19 @@ namespace HDE {
     class testServer : public SimpleServer {
 
         private:
-            char    buffer[30000] = {0};
+            // char    buffer[30000] = {0};
             int     newSocket;
-            long    _ret;    // return of read()
+            // long    _ret;    // return of read()
+            fd_set  FD_read;
+            fd_set  FD_write;
             void    accepter();
             void    handler();
             void    responder(std::string content, std::string contentType);
 
-            httpRequest     requests();
+            std::map<int, Client*>  clients;
 
-            /* handle methods */
-            void    getMethod();
-            void    postMethod();
-            void    deleteMethod();
+            httpRequest             requests();
+
 
         public:
             testServer();
