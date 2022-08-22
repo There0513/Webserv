@@ -12,13 +12,13 @@ namespace HDE {
     class testServer : public SimpleServer {
 
         private:
-            // char    buffer[30000] = {0};
+            char    buffer[30000] = {0};
             int     newSocket;
-            // long    _ret;    // return of read()
+            long    _ret;    // return of read()
             fd_set  FD_read;
             fd_set  FD_write;
             void    accepter();
-            void    handler();
+            // void    handler();       // => methodHandler() in response
             void    responder(std::string content, std::string contentType);
 
             std::map<int, Client*>  clients;
@@ -29,6 +29,9 @@ namespace HDE {
         public:
             testServer();
             void    launch();
+
+            // tmp:
+            int     readingTmp();
     };
 }
 

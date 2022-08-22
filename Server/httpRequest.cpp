@@ -55,6 +55,7 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
         _version = str.substr(start, end - start).substr(5, 4);
     if (_url.size() <= 1)
             _url = "index.html";
+    // check if query '? =' in _url
     // if root in config.file -> add root:
     std::string tmp_root = "www";                                       // getRoot() from config.file
     _url = tmp_root + "/" + _url;
@@ -94,6 +95,7 @@ another '\r\n'. The terminating chunk is a regular chunk, with the exception tha
 trailer, which consists of a (possibly empty) sequence of header fields.
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding */
 void    httpRequest::parseBody() {
+    std::cout << "_body: |" << _body << "|" << std::endl;
     // if 'Content-Length' check if parseBody needed +++
     // check if "Transfer-Encoding"
     // check 'chunked'
@@ -109,11 +111,21 @@ int     httpRequest::isValid() {
 }
 
 void    httpRequest::parseRequest(std::string buffer) {
-    getFirstLine(buffer);
-    parseHeader(buffer);
-    parseBody();
-}
+    int start = buffer.find("\r\n\r\n");
+    int end = buffer.size();
 
+    if (start != std::string::npos) {    // check if "/r/n/r/n" present
+        _body = buffer.substr(start, end -1);
+
+        getFirstLine(buffer);
+        start = buffer.find("\r\n");
+        if (start != std::string::npos)
+            buffer = buffer.substr(start, end);
+        std::cout << "new buffer = |" << buffer << "|" << std::endl;
+        parseHeader(buffer);
+        parseBody();
+    }
+}
 
 
 

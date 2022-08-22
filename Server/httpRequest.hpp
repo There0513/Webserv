@@ -13,7 +13,7 @@ class httpRequest
 
 	    std::vector<std::pair<std::string, std::string > >  _header;
         // std::string _contentType;
-        // body
+        std::string _body;
 
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
 

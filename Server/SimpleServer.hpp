@@ -23,7 +23,7 @@ namespace HDE {
         private:
             ListeningSocket *socket;
             virtual void accepter() = 0;
-            virtual void handler() = 0;
+            // virtual void handler() = 0;
             virtual void responder(std::string content, std::string contentType) = 0;
 
         public:

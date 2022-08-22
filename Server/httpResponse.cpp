@@ -35,6 +35,7 @@ void    httpResponse::findContentType(std::string url) {
 
             /* handle methods */
 void    GETMethod() {
+    std::cout << "\tGET method:\n";
     // check for cgi
     // if !cgi:
         // find resource    handle path (location, root, ...)
@@ -53,6 +54,7 @@ void    GETMethod() {
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    POSTMethod() {
+    std::cout << "\tPOSTmethod:\n";
     // check for cgi
     // if !cgi:
         // check for upload file
@@ -73,6 +75,7 @@ void    POSTMethod() {
 
 // The DELETE method deletes the specified resource.
 void    DELETEMethod() {
+    std::cout << "\tDELETE method:\n";
     // handle path
     // remove path data
     // create response  or error handling if remove didn't work
