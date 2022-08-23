@@ -12,6 +12,8 @@ CONFIG CLASS:
         - 301 redirection
         - upload option
         - autoindex option
+
+
   SERVER CLASS:
     - map with all servers ('server_map') map<fd, server> to iterate through for (read/write to process the servers requests)
     - loop through server_map to connect (accept etc.) + save sockets of each (in map of sockets?!)
@@ -62,3 +64,25 @@ accept new connections for each server...
     }
 }
 close fds + destroy servers
+
+
+
+
+
+receive a connection
+                                                map <fd, server>  _server
+    in _server      if (FD_ISSET(fd, &reading_set))
+        socket = accept connection
+            insert socket in _socket map        map <socket, server> _socket
+        
+    in _socket map  if (FD_ISSET(socket, &reading_set))
+        receive request in buffer read/recv + check
+            if read finished:
+                process with socket (chunk) + push to _ready map 
+
+    if something in _ready map:
+		FD_SET(*it, &writing_set);
+    
+    in _ready:
+        if (FD_ISSET(*it, &writing_set))
+            _sockets[*it]->send(*it);

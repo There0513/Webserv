@@ -99,7 +99,7 @@ void    HDE::testServer::launch() {
                         response.findContentType(request.getUrl());
                         // recheck valid status code
                         response.methodHandler(request.getMethod());
-                        responder(response.getPageContent(), response.getContentType()); // later in respond() 
+                        responder(response.getPageContent(), response.getContentType()); // later in respond() just here for testing
 
                     }
                 }
@@ -117,4 +117,69 @@ void    HDE::testServer::launch() {
         // break ;
     }
     
+}
+
+
+
+
+
+// new functions from capucine branch:
+
+void    HDE::testServer::deal_with_data(int listnum) {
+
+    if (read(connectList[listnum], buffer, 30000) < 0) {
+        std::cout << "Connexion failed" << std::endl; // connection closed, close this end
+        close(connectList[listnum]);
+        connectList[listnum] = 0;
+    }
+    else {
+
+        std::cout << buffer << std::endl;
+        char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
+        write(connectList[listnum], hello, strlen(hello));
+        std::cout << "Responded" << std::endl;
+    }
+}
+
+void    HDE::testServer::buildSelectList() {
+
+    int listnum; // current items in connect list for the FOR loop
+
+/* First, put together fd_set for select(), which will consist of the sock variables in case a new connection is coming in + all the sockets we have already accepted
+    FD_ZERO clears out the fd_set called socks so that it does not contain any fd */
+
+    FD_ZERO(&socks);
+
+/* FD_SET() adds the fd sock to the fd set so that select() will return if a connection comes in on that socket */
+
+    FD_SET(getSocket()->getsock(), &socks);
+
+/* Loop through all the possible connections and add those to the fd set */
+
+    for (listnum = 0; listnum < 10; listnum++) {
+
+        if (connectList[listnum] != 0) {
+
+            FD_SET(connectList[listnum], &socks);
+            if (connectList[listnum] > highSocket)
+                highSocket = connectList[listnum];
+        }
+    }
+
+}
+
+void    HDE::testServer::setNonBlocking(int sock) {
+
+    int opts = fcntl(sock, F_GETFL);
+
+    if (opts < 0) {
+        perror("fcntl(F_GETFL)");
+        exit(EXIT_FAILURE);
+    }
+    opts = (opts | O_NONBLOCK);
+    if (fcntl(sock, F_SETFL, opts) < 0) {
+        perror("fcntl(F_SETFL)");
+        exit(EXIT_FAILURE);
+    }
+    return;
 }
