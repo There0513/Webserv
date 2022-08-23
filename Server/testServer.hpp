@@ -25,6 +25,13 @@ namespace HDE {
 
             httpRequest             requests();
 
+    // from capucine branch:
+            // void    handler();
+            // void    responder();
+            int    connectList[10]; // array of connected sockets
+            fd_set  socks; // socket fds we want to wake up for, using select()
+            int     highSocket; // highest fd
+
 
         public:
             testServer();
@@ -32,6 +39,12 @@ namespace HDE {
 
             // tmp:
             int     readingTmp();
+
+    // from capucine branch:
+            void    buildSelectList(void);
+            void    handle_new_connections();
+            void    setNonBlocking(int);
+            void    deal_with_data(int);
     };
 }
 

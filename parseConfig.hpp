@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parseConfig.hpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: cmarteau <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/20 00:53:05 by cmarteau          #+#    #+#             */
+/*   Updated: 2022/08/20 00:53:06 by cmarteau         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef parseConfig_HPP
 # define parseConfig_HPP
 
@@ -6,12 +18,17 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <cstring>
 
 class ConfigFile {
 
     private:
+
         //A map that will contain the directive (ex. port, location, root, server_name) 
         //and a vector containing the possible values (ex. if there are several server_names)
+
         std::map<std::string, std::vector<std::string> >    _content;
         std::string                                         _directive; // A string containing the directive
         std::vector<std::string>                            _valuesVec; // A vector containing the possible values
@@ -22,9 +39,15 @@ class ConfigFile {
 
         std::string     defineHost(std::string str);
         bool            isLocalIP(std::string const & listen, std::string const & host); // A function to check if the IP address of the request matches our local IP
-        bool            sameServerName(std::vector<std::string> server_name, std::string const & host);
-        bool            isCandidateServer(std::vector<std::string> servers, std::string const & testServ);
+        bool            sameServerName(std::vector<std::string> server_name, std::string const & host); // A function to check if the server_name corresponds to the host of the request
+        bool            isCandidateServer(std::vector<std::string> servers, std::string const & testServ); // A function to create a list of candidate servers to serve the request
 
+        bool            checkDirective(std::string); // A function to check errors in directives
+        void            checkErrorConfig(void); // A function to check errors in the config file 
+
+        //parsing utils
+        std::string                 trim(std::string const & source, char const *delims = "\t\r\n");
+        std::vector<std::string>    fillVector(std::string const & value);
 
     public:
             //Constructor
@@ -34,9 +57,26 @@ class ConfigFile {
             std::map<std::string, std::vector<std::string> > const & getMap() const;
             std::vector<std::string> const &                         getValue(std::string const & port, std::string const & url, std::string const & directive);
 
+            //Useful member functions 
             std::string     findPath(std::string const & port, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root
             bool            isMethodAllowed(std::string const & port, std::string const & url, std::string const & method); // A function to check if the required method is allowed
 
+            //Exception classes 
+            class   ValueNotFoundException : public std::exception {
+
+                public:
+                    virtual const char *what() const throw() {
+                        return ("Error: Value not found");
+                    }
+            };
+
+            class  ServerNotFoundException : public std::exception {
+
+                public:
+                    virtual const char *what() const throw() {
+                        return ("Error: Server not found");
+                    }
+            };
 };
 
 #endif

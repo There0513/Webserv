@@ -15,6 +15,9 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <string.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <fcntl.h>
 
 namespace HDE {
 
@@ -30,6 +33,7 @@ namespace HDE {
             SimpleServer(int domain, int service, int protocol, int port, u_long interface, int bklog);
             virtual void launch () = 0;
             ListeningSocket * getSocket();
+            // void    setNonBlocking(ListeningSocket);
     };
 
 }
