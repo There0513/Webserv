@@ -38,6 +38,40 @@ std::string     httpRequest::readFileContent() {
     return buffer.str();
 }
 
+int     httpRequest::checkFirstLine() {
+// check method:
+    if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
+    {
+        std::cerr << "Error: method not valid." << std::endl;
+        // change status code + return -1
+        return -1;
+    }
+// check url:
+std::cout << "_url[0] = " << _url[0] << "|\n";
+    if (_url[0] != '/') {
+        _statusCode = 400;
+        return -1;
+    }
+    if (_url.length() >= 256) {
+        _statusCode = 414;
+        return -1;
+    }
+// check http version:
+    if (_version.compare(0, 6, "HTTP/1") != 0) {
+        std::cerr << "Error: HTTP Version not valid." << std::endl;
+        _statusCode = 505;  // "HTTP Version not supported"
+        return -1;
+    }
+    // check if numbers after 'HTTP/1':
+    if (_version.substr(7, _version.length()).find_first_not_of("0123456789") != std::string::npos) {
+        std::cerr << "Error: HTTP Version not valid." << std::endl;
+        _statusCode = 505;  // "HTTP Version not supported"
+        return -1;
+    }
+    std::cout << "\t\t\t\tcheckFirstLine OK\n";
+    return 1;
+}
+
 void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
 {
     int start = 0;
@@ -48,32 +82,53 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
     start = end + deli.size();
     end = str.find(deli, start);
     if (end != -1)
-        _url = str.substr(start+1, end - start - 1);
+        _url = str.substr(start, end - start);
     start = end + deli.size();
-    end = str.find(deli, start);
+    end = str.find("\r\n", start);
     if (end != -1)
-        _version = str.substr(start, end - start).substr(5, 4);
-    if (_url.size() <= 1)
-            _url = "index.html";
+        _version = str.substr(start, end - start);
+//_________________________  -> do that later in programm:
+    // if (_url.size() <= 1 && _url[0] == '\'')
+    //         _url = "index.html";
     // check if query '? =' in _url
     // if root in config.file -> add root:
-    std::string tmp_root = "www";                                       // getRoot() from config.file
-    _url = tmp_root + "/" + _url;
-
-    std::cout << "_method: " << _method << std::endl;
-    std::cout << "_url: " << _url << std::endl;
-    std::cout << "_version: " << _version << std::endl;
-    // while (end != -1) {
-    //     std::cout << "\nsplit: " << str.substr(start, end - start) << std::endl;
-    //     start = end + deli.size();
-    //     end = str.find(deli, start);
-    // }
-    // std::cout << "\nsplit: " << str.substr(start, end - start);
+    // std::string tmp_root = "www";                                       // getRoot() from config.file
+    // _url = tmp_root + "/" + _url;
+//_________________________
+    std::cout << "_method: |" << _method << "|" << std::endl;
+    std::cout << "_url: |" << _url << "|" << std::endl;
+    std::cout << "_version: |" << _version << "|" << std::endl;
 }
 
 void    httpRequest::parseHeader(std::string buffer) {
-    size_t  pos;
+    size_t      points;
+    std::string key;
+    std::string value;
+    
+    if (buffer.find("\r\n") == 0)       // erase first empty line
+                buffer.erase(0, 1);
+    std::cout << "buffer: |" << buffer << "|\n";
+        
+    std::string    line = buffer.substr(0, buffer.find("\r\n"));
+    // std::cout << "line: |" << line << "|\n";
 
+    while (line != "")
+    {
+        points = line.find_first_of(":");
+        key = line.substr(1, points);   // without \n
+        value = line.substr(points + 1, line.length());
+        if (key != "" && value != ""){
+            std::cout << "\tkey: " << key << " val: " << value << "\n";
+            _header.push_back(std::make_pair(key, value));
+        }
+        buffer.erase(0, line.length() + 1);     // delete first line from buffer
+        // std::cout << "\tbuffer: |" << buffer << "|\n";
+        line = buffer.substr(0, buffer.find("\r\n"));
+        // std::cout << "\nline: |" << line << "|\n";
+    }
+    // print _header:
+    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
+        std::cout << "key: " << it->first << " : val: " << it->second << "\n";
     /*
     pos = get
     while pos != std::string::npos  // while /n/r or /n/r is not last elem
@@ -118,10 +173,11 @@ void    httpRequest::parseRequest(std::string buffer) {
         _body = buffer.substr(start, end -1);
 
         getFirstLine(buffer);
+        checkFirstLine(); // if -1  -> return/send error response
         start = buffer.find("\r\n");
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);
-        std::cout << "new buffer = |" << buffer << "|" << std::endl;
+        std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
         parseHeader(buffer);
         parseBody();
     }

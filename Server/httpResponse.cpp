@@ -36,7 +36,7 @@ void    httpResponse::findContentType(std::string url) {
             /* handle methods */
 void    GETMethod() {
     std::cout << "\tGET method:\n";
-    // check for cgi
+    // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
     // if !cgi:
         // find resource    handle path (location, root, ...)
         // check if file exists with stat()
@@ -55,7 +55,7 @@ void    GETMethod() {
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    POSTMethod() {
     std::cout << "\tPOSTmethod:\n";
-    // check for cgi
+    // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
     // if !cgi:
         // check for upload file
             // if !

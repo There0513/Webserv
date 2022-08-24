@@ -15,6 +15,9 @@ class httpRequest
         // std::string _contentType;
         std::string _body;
 
+        int         _statusCode;
+
+
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
 
     public:
@@ -26,6 +29,7 @@ class httpRequest
         void            findContentType();
         void            parseRequest(std::string buffer);
         void            getFirstLine(std::string str, std::string deli);
+        int             checkFirstLine();
         void            parseHeader(std::string buffer);
         void            parseBody();
 
