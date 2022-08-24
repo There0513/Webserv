@@ -23,9 +23,3 @@ struct sockaddr_in HDE::SimpleSocket::getaddress() { return address; }
 int HDE::SimpleSocket::getsock() { return sock; }
 int HDE::SimpleSocket::getconnection() { return connection; }
 void HDE::SimpleSocket::setconnection(int con) { connection = con; }
-
-void    parseConfig(std::string confFile) {
-
-    
-
-}

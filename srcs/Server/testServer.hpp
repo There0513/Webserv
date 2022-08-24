@@ -26,17 +26,18 @@ namespace HDE {
             void    handler();
             void    responder();
 
-            int    connectList[10]; // array of connected sockets
+            int     connectList[10]; // array of connected sockets (clients)
             fd_set  socks; // socket fds we want to wake up for, using select()
             int     highSocket; // highest fd
 
-        public:
-            testServer();
-            void    launch();
             void    buildSelectList(void);
             void    handle_new_connections();
             void    setNonBlocking(int);
             void    deal_with_data(int);
+            
+        public:
+            testServer();
+            void    launch();
     };
 }
 

@@ -5,9 +5,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include "SimpleSocket.hpp"
 
-namespace HDE
-{
+namespace HDE {
+
     class ConnectingSocket : public SimpleSocket {
         
         public:

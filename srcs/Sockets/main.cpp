@@ -2,10 +2,6 @@
 #include "BindingSocket.hpp"
 #include "ListeningSocket.hpp"
 #include "ConnectingSocket.hpp"
-#include "SimpleSocket.cpp"
-#include "BindingSocket.cpp"
-#include "ListeningSocket.cpp"
-#include "ConnectingSocket.cpp"
 
 using namespace std;
 

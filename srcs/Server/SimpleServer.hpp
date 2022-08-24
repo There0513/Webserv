@@ -19,10 +19,6 @@
 #include "../Sockets/BindingSocket.hpp"
 #include "../Sockets/ListeningSocket.hpp"
 #include "../Sockets/ConnectingSocket.hpp"
-#include "../Sockets/SimpleSocket.cpp"
-#include "../Sockets/BindingSocket.cpp"
-#include "../Sockets/ListeningSocket.cpp"
-#include "../Sockets/ConnectingSocket.cpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
@@ -43,9 +39,8 @@ namespace HDE {
 
         public:
             SimpleServer(int domain, int service, int protocol, int port, u_long interface, int bklog);
-            virtual void launch () = 0;
+            virtual void launch() = 0;
             ListeningSocket * getSocket();
-            // void    setNonBlocking(ListeningSocket);
     };
 }
 
