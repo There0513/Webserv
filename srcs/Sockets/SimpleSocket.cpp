@@ -19,13 +19,18 @@ void    HDE::SimpleSocket::testConnection(int itemToTest) {
         exit(EXIT_FAILURE);}
 }
 
-struct sockaddr_in HDE::SimpleSocket::getaddress() { return address; }
-int HDE::SimpleSocket::getsock() { return sock; }
-int HDE::SimpleSocket::getconnection() { return connection; }
-void HDE::SimpleSocket::setconnection(int con) { connection = con; }
+struct sockaddr_in HDE::SimpleSocket::getaddress() {
+    return address;
+}
 
-void    parseConfig(std::string confFile) {
+int HDE::SimpleSocket::getsock() {
+    return sock;
+}
 
-    
+int HDE::SimpleSocket::getconnection() {
+    return connection;
+}
 
+void HDE::SimpleSocket::setconnection(int con) {
+    connection = con;
 }

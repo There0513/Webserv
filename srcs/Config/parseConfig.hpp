@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
+/*   By: cmarteau <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:53:05 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/24 12:58:21 by threiss          ###   ########.fr       */
+/*   Updated: 2022/08/20 00:53:06 by cmarteau         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,7 @@ class ConfigFile {
 
         //A map that will contain the directive (ex. port, location, root, server_name) 
         //and a vector containing the possible values (ex. if there are several server_names)
-/*
-"server1/listen"    localhost:80
-server1/server_name ...
-server1/location/uploads/root   /var/www
 
-GET /uploads http
-host: localhost:80
-
-*/
         std::map<std::string, std::vector<std::string> >    _content;
         std::string                                         _directive; // A string containing the directive
         std::vector<std::string>                            _valuesVec; // A vector containing the possible values

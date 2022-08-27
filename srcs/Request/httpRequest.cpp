@@ -27,6 +27,13 @@ std::string     httpRequest::readFileContent() {
     std::ifstream       data;
     std::ostringstream  buffer;
 
+std::cout << "\t\t\t_url: " << _url << std::endl;
+    if (_url[0] == '/' && _url.length() > 1)
+        _url = _url.substr(1, _url.length());
+    if (_url[0] == '/' && _url.length() == 1) // && autoindex on
+        _url = "index.html";
+std::cout << "\t\t\tnew _url: " << _url << std::endl;
+
     data.open(_url);
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
@@ -158,6 +165,9 @@ void    httpRequest::parseBody() {
 }
 
 int     httpRequest::isValid() {
+    std::cout << "\t\t\t_url.length(): " << _url.length() << std::endl;
+    if (_url.length() < 0)
+        return -1;
     // method allowed
     // http version
     // min/max length content

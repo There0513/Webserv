@@ -240,7 +240,7 @@ bool     ConfigFile::isCandidateServer(std::vector<std::string> servers, std::st
 
     for (; rit != servers.rend(); rit++) {
 
-        if (!server.compare(*rit));
+        if (!server.compare(*rit))
             return true;
     }
     return false;

@@ -1,7 +1,7 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include "testServer.hpp"
+# include "../Server/testServer.hpp"
 
 class Client {
     private:

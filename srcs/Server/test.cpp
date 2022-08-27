@@ -2,8 +2,8 @@
 #include "testServer.cpp"
 #include "SimpleServer.hpp"
 #include "SimpleServer.cpp"
-#include "httpRequest.hpp"
-#include "httpRequest.cpp"
+#include "../Request/httpRequest.hpp"
+#include "../Request/httpRequest.hpp"
 
 int main() {
 
