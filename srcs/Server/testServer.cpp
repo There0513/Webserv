@@ -125,10 +125,6 @@ void    HDE::testServer::deal_with_data(int listnum) {
         connectList[listnum] = 0;
     }
     else {
-        // std::cout << buffer << std::endl;
-        // char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 25\n\nHello to the world around";
-        // write(connectList[listnum], hello, strlen(hello));
-        // std::cout << "Responded" << std::endl;
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
         // httpRequest request(*(clients[newSocket])->_buffer, newSocket);    // parse request-string into 'httpRequest request'

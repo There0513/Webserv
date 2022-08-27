@@ -7,12 +7,11 @@ httpRequest::httpRequest(std::string buffer, long socket) {
 	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
     // parse buffer (method, url, version, headerFields, body) -> add header:
-
     parseRequest(buffer);
     // check if valid (here or directly in parseRequest)
 
     // find url-corresponding route
-    // check if request is valid (http version, host, method(valid one + allowed in config.file + if POST: content-length header))
+    // check if request is allowed in config.file + if POST: content-length header))
     // if redirection configured
         // set redirection status code
         // create response
@@ -189,6 +188,15 @@ void    httpRequest::parseRequest(std::string buffer) {
             buffer = buffer.substr(start, end);
         std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
         parseHeader(buffer);
+        // get server informations for port/host from conf file?
+
+
+        /*
+        The Content-Length is optional in an HTTP request. For a GET or DELETE the length must be zero.
+        For POST, if Content-Length is specified and it does not match the length of the message-line,
+        the message is either truncated, or padded with nulls to the specified length.
+        The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
+        */
         parseBody();
     }
 }
