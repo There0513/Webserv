@@ -20,7 +20,6 @@ class Client {
 
         void    setSocket(int socket);
         int     getSocket();
-        std::string getBuffer();
 };
 
 #endif

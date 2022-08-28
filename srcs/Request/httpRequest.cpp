@@ -8,14 +8,6 @@ httpRequest::httpRequest(std::string buffer, long socket) {
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
     // parse buffer (method, url, version, headerFields, body) -> add header:
     parseRequest(buffer);
-    // check if valid (here or directly in parseRequest)
-
-    // find url-corresponding route
-    // check if request is allowed in config.file + if POST: content-length header))
-    // if redirection configured
-        // set redirection status code
-        // create response
-    // else -> handle method-function (GET, POST, DELETE)
 }
 
 httpRequest::httpRequest(void) {}
@@ -53,15 +45,16 @@ int     httpRequest::checkFirstLine() {
         return -1;
     }
 // check url:
-std::cout << "_url[0] = " << _url[0] << "|\n";
-    if (_url[0] != '/') {
-        _statusCode = 400;
+    std::cout << "_url[0] = " << _url[0] << "|\n";
+    if (_url[0] != '/' || _url.length() == 0) {
+        _statusCode = 400; // bad request
         return -1;
     }
     if (_url.length() >= 256) {
         _statusCode = 414;
         return -1;
     }
+
 // check http version:
     if (_version.compare(0, 6, "HTTP/1") != 0) {
         std::cerr << "Error: HTTP Version not valid." << std::endl;
@@ -93,14 +86,6 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ")
     end = str.find("\r\n", start);
     if (end != -1)
         _version = str.substr(start, end - start);
-//_________________________  -> do that later in programm:
-    // if (_url.size() <= 1 && _url[0] == '\'')
-    //         _url = "index.html";
-    // check if query '? =' in _url
-    // if root in config.file -> add root:
-    // std::string tmp_root = "www";                                       // getRoot() from config.file
-    // _url = tmp_root + "/" + _url;
-//_________________________
     std::cout << "_method: |" << _method << "|" << std::endl;
     std::cout << "_url: |" << _url << "|" << std::endl;
     std::cout << "_version: |" << _version << "|" << std::endl;
@@ -164,13 +149,11 @@ void    httpRequest::parseBody() {
 }
 
 int     httpRequest::isValid() {
-    std::cout << "\t\t\t_url.length(): " << _url.length() << std::endl;
-    if (_url.length() < 0)
-        return -1;
-    // method allowed
-    // http version
+    checkFirstLine(); // if -1  -> return/send error response
+
+    // if POST: content-length header
+    // check if method is allowed
     // min/max length content
-    // etc
     return 1;   // all good
 }
 
@@ -182,14 +165,14 @@ void    httpRequest::parseRequest(std::string buffer) {
         _body = buffer.substr(start, end -1);
 
         getFirstLine(buffer);
-        checkFirstLine(); // if -1  -> return/send error response
         start = buffer.find("\r\n");
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);
         std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
         parseHeader(buffer);
         // get server informations for port/host from conf file?
-
+        // if (_header["Transfer-Encoding"] == "chunked") {
+        std::string *val = getHeaderValue("Transfer-Encoding");
 
         /*
         The Content-Length is optional in an HTTP request. For a GET or DELETE the length must be zero.
@@ -201,7 +184,16 @@ void    httpRequest::parseRequest(std::string buffer) {
     }
 }
 
+void    httpRequest::handleURL() {   // find url-corresponding route
+    // if (_url.size() <= 1 && _url[0] == '\'')
+    //         _url = "index.html";
+    // check if query '? =' in _url
+    // if root in config.file -> add root:
+        // std::string tmp_root = "www";                // getRoot() from config.file
+        // _url = tmp_root + "/" + _url;
 
+    // apply - location/root - alias - queries 
+}
 
 
 /* SETTERS - GETTERS */
@@ -228,4 +220,15 @@ void    httpRequest::setMethod(std::string method) {
 
 std::string httpRequest::getMethod() {
     return _method;
+}
+
+std::string *httpRequest::getHeaderValue(std::string const &key) {
+	for (std::vector<std::pair<std::string, std::string> >::iterator
+			 it = _headers.begin();
+		 it != _headers.end(); ++it)
+	{
+		if (it->first == key)
+			return (&it->second);
+	}
+	return (NULL);
 }

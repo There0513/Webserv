@@ -35,6 +35,8 @@ class httpRequest
 
         int             isValid();
 
+        void            handleURL();
+
         /* handle methods */
         void    GETMethod();
         void    POSTMethod();
@@ -52,6 +54,9 @@ class httpRequest
 
         void        setMethod(std::string method);
         std::string getMethod();
+
+
+        std::string *getHeaderValue(std::string const &key);
 };
 
 #endif

@@ -7,7 +7,7 @@
 #include "../Client/Client.cpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8000, INADDR_ANY, 10) { launch(); }
+HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10) { launch(); }
 
 void    HDE::testServer::launch() {
 
@@ -127,9 +127,13 @@ void    HDE::testServer::deal_with_data(int listnum) {
     else {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
-        // httpRequest request(*(clients[newSocket])->_buffer, newSocket);    // parse request-string into 'httpRequest request'
-        if (request.isValid() != -1) {// check if valid
-            // apply - location/root (here or in getfirstline()?) - alias - queries 
+        if (request.isValid() != -1) {// check if request is valid
+            request.handleURL();
+            // if redirection configured
+                // set redirection status code
+                // create response
+            // else -> handle method-function (GET, POST, DELETE)
+            
             response.setPageContent(request.readFileContent());
             response.findContentType(request.getUrl());
             // recheck valid status code
