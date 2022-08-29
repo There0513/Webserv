@@ -2,7 +2,8 @@
 #include <fstream>
 #include <sstream> // ostringstream
 
-httpRequest::httpRequest(std::string buffer, long socket) {
+httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _header(NULL),
+_body(""), _statusCode(0), _isChunked(false) {
     std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
 	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
@@ -11,6 +12,7 @@ httpRequest::httpRequest(std::string buffer, long socket) {
 }
 
 httpRequest::httpRequest(void) {}
+
 httpRequest::~httpRequest() {}
 
 //https://www.tutorialspoint.com/Read-whole-ASCII-file-into-Cplusplus-std-string
@@ -134,18 +136,10 @@ void    httpRequest::parseHeader(std::string buffer) {
     */
 }
 
-/*  chunked:
-Data is sent in a series of chunks. The Content-Length header is omitted in this case and at the beginning of each chunk you
-need to add the length of the current chunk in hexadecimal format, followed by '\r\n' and then the chunk itself, followed by
-another '\r\n'. The terminating chunk is a regular chunk, with the exception that its length is zero. It is followed by the
-trailer, which consists of a (possibly empty) sequence of header fields.
-https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding */
 void    httpRequest::parseBody() {
     std::cout << "_body: |" << _body << "|" << std::endl;
     // if 'Content-Length' check if parseBody needed +++
-    // check if "Transfer-Encoding"
-    // check 'chunked'
-    // https://stackoverflow.com/questions/24625620/how-should-http-server-respond-to-head-request-for-chunked-encoding
+   
 }
 
 int     httpRequest::isValid() {
@@ -157,6 +151,15 @@ int     httpRequest::isValid() {
     return 1;   // all good
 }
 
+/*  chunked:
+Data is sent in a series of chunks. The Content-Length header is omitted in this case and at the beginning of each chunk you
+need to add the length of the current chunk in hexadecimal format, followed by '\r\n' and then the chunk itself, followed by
+another '\r\n'. The terminating chunk is a regular chunk, with the exception that its length is zero. It is followed by the
+trailer, which consists of a (possibly empty) sequence of header fields.
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+https://stackoverflow.com/questions/24625620/how-should-http-server-respond-to-head-request-for-chunked-encoding
+*/
 void    httpRequest::parseRequest(std::string buffer) {
     int start = buffer.find("\r\n\r\n");
     int end = buffer.size();
@@ -171,9 +174,13 @@ void    httpRequest::parseRequest(std::string buffer) {
         std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
         parseHeader(buffer);
         // get server informations for port/host from conf file?
-        // if (_header["Transfer-Encoding"] == "chunked") {
         std::string *val = getHeaderValue("Transfer-Encoding");
-
+        if (val) {
+            if (val->find("chunked") != std::string::npos)
+                _isChunked = true;
+        }
+        else if (getHeaderValue("Content-Length")) {
+        }
         /*
         The Content-Length is optional in an HTTP request. For a GET or DELETE the length must be zero.
         For POST, if Content-Length is specified and it does not match the length of the message-line,
@@ -224,8 +231,8 @@ std::string httpRequest::getMethod() {
 
 std::string *httpRequest::getHeaderValue(std::string const &key) {
 	for (std::vector<std::pair<std::string, std::string> >::iterator
-			 it = _headers.begin();
-		 it != _headers.end(); ++it)
+			 it = _header.begin();
+		 it != _header.end(); ++it)
 	{
 		if (it->first == key)
 			return (&it->second);

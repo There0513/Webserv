@@ -16,6 +16,7 @@ class httpRequest
         std::string _body;
 
         int         _statusCode;
+        bool        _isChunked;
 
 
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
