@@ -310,8 +310,7 @@ bool    ConfigFile::checkDirective(std::string dir) {
     if (dir.find("location") != std::string::npos)
         dir.substr(dir.find_last_of("/"), dir.length());
 
-    std::vector<std::string>    listOfDir =
-    {"listen", "server_name", "root", "error_page", "client_max_body_size", "index", "autoindex", "cgi", "authorized_methods", "upload_path", "redirection"};
+    std::vector<std::string>    listOfDir = {"listen", "server_name", "root", "error_page", "client_max_body_size", "index", "autoindex", "cgi", "authorized_methods", "upload_path", "redirection"};
 
     if (std::find(listOfDir.begin(), listOfDir.end(), dir) != listOfDir.end())
         return true;
