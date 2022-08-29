@@ -19,10 +19,6 @@
 #include "../Sockets/BindingSocket.hpp"
 #include "../Sockets/ListeningSocket.hpp"
 #include "../Sockets/ConnectingSocket.hpp"
-#include "../Sockets/SimpleSocket.cpp"
-#include "../Sockets/BindingSocket.cpp"
-#include "../Sockets/ListeningSocket.cpp"
-#include "../Sockets/ConnectingSocket.cpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>

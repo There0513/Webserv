@@ -45,7 +45,7 @@ namespace HDE {
             void    deal_with_data(int);
             
         public:
-            testServer();
+            testServer(int port = 8080);
             void    launch();
 
             // tmp:

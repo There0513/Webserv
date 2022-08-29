@@ -1,13 +1,10 @@
 #include "testServer.hpp"
 #include "../Request/httpRequest.hpp"
-#include "../Request/httpRequest.cpp"
 #include "../Response/httpResponse.hpp"
-#include "../Response/httpResponse.cpp"
 #include "../Client/Client.hpp"
-#include "../Client/Client.cpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10) { launch(); }
+HDE::testServer::testServer(int port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) { launch(); }
 
 void    HDE::testServer::launch() {
 
@@ -112,7 +109,7 @@ void    HDE::testServer::responder() {
         if (FD_ISSET(connectList[listnum], &socks))
             deal_with_data(listnum);
         else
-        std::cout << "nothing to deal with.\n";
+            std::cout << "nothing to deal with.\n";
     }
 }
 
@@ -155,7 +152,6 @@ void    HDE::testServer::handleResponse(std::string content, std::string content
     answer+= "\n\n";
     answer+= content;
 
-
     //  WRITE
     // send response
     // std::cout << "answer = [" << answer << "]\n" << std::endl;
@@ -188,7 +184,6 @@ void    HDE::testServer::buildSelectList() {
                 highSocket = connectList[listnum];
         }
     }
-
 }
 
 void    HDE::testServer::setNonBlocking(int sock) {
