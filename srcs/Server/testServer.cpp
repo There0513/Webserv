@@ -6,7 +6,6 @@
 
 HDE::testServer::testServer(std::vector<int> port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
     
-    std::cout << "COUCOU JE SUIS DANS LE CONSTRUCTEUR DU TEST SERVER" << std::endl;
     launch();
 }
 

@@ -11,6 +11,13 @@
 /* ************************************************************************** */
 
 #include "parseConfig.hpp"
+#include "colormod.hpp"
+
+Color::Modifier		red(Color::FG_RED);
+Color::Modifier		cyan(Color::FG_CYAN);
+Color::Modifier		def(Color::FG_DEFAULT);
+Color::Modifier		green(Color::FG_GREEN);
+Color::Modifier		magenta(Color::FG_LIGHT_MAGENTA);
 
 // ================================== CONSTRUCTOR: PARSE + STORE THE ELEMENTS IN A MAP ======================================
 
@@ -42,12 +49,12 @@ ConfigFile::ConfigFile(std::string const & configFile) {
             else if (!_inSection.compare("location/")) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
 
-            else if (!strncmp(_inSection.c_str(), "location/", 9)) 
+            else if (!strncmp(_inSection.c_str(), "location/", 9))
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection);
 
             else {
 
-                std::cout << "Config File Error: " << _inSection << ": Wrong block nomination" << std::endl;
+                std::cout << red <<  "Config File Error: [" << _inSection << "] is not an acceptable block nomination" << def << std::endl;
                 exit(0);
             }
             continue; 
@@ -58,7 +65,7 @@ ConfigFile::ConfigFile(std::string const & configFile) {
         _directive = trim(line.substr(0, posEqual));
         if (!checkDirective(_directive)) {
 
-            std::cout << "Config File Error: " << _directive << ": Wrong directive" << std::endl;
+            std::cout << red << "Config File Error: [" << _directive << "] is not an acceptable directive" << def << std::endl;
             exit(0);
         }
         value = trim(line.substr(posEqual + 1, line.length() - _directive.length() - 2));
@@ -117,7 +124,7 @@ void    ConfigFile::getPorts() {
 
             std::string stringPort = it->second[0].substr(it->second[0].find(":") + 1, it->second[0].length());
             int port = std::atoi(stringPort.c_str());
-            
+
             if (std::find(portsToOpen.begin(), portsToOpen.end(), port) == portsToOpen.end())
                 portsToOpen.push_back(port);
         }
@@ -160,12 +167,7 @@ std::string     ConfigFile::findServer(std::string const & host) {
     std::map<std::string, std::vector<std::string> >::iterator it = _content.begin();
     std::vector<std::string>    candidateServers;
 
-// COMPLETE LISTEN DIRECTIVE IF INFORMATION IS MISSING 
-    for (; it != _content.end(); it++) 
-        if (it->first.find("listen") != std::string::npos) 
-            it->second[0] = defineHost(it->second[0]);
-
-//  DETERMINE CANDIDATE SERVERS
+    //  DETERMINE CANDIDATE SERVERS
     it  = _content.begin();
     for (; it != _content.end(); it++) {
 
@@ -173,11 +175,11 @@ std::string     ConfigFile::findServer(std::string const & host) {
             candidateServers.push_back(it->first.substr(0, it->first.find("/") + 1));
     }
 
-//  RETURN SERVER IF THERE IS ONLY ONE CANDIDATE 
+    //  RETURN SERVER IF THERE IS ONLY ONE CANDIDATE 
     if (candidateServers.size() == 1)
         return candidateServers[0];
 
-// ELSE, COMPARE SERVER NAMES
+    // ELSE, COMPARE SERVER NAMES
     if (candidateServers.size() > 1) {
 
         it  = _content.begin();
@@ -224,17 +226,17 @@ bool    ConfigFile::isLocalIP(std::string const & listen, std::string const & ho
 // DOES THE HOST SPECIFY BOTH IP AND PORT ?
 std::string     ConfigFile::defineHost(std::string str) {
 
-//  YES
+    //  YES
     if (str.find(":") != std::string::npos) 
         return str;
 
-//  DOES NOT SPECIFY THE PORT: SET THE DEFAULT PORT TO 8080
-    else if (str.find(".") != std::string::npos)
-        return (str + ":8080");
-
-//  DOES NOT SPECIFY IP: SET THE GENERIC ADDRESS TO 0.0.0.0
-    else
+    //  DOES NOT SPECIFY IP: SET THE GENERIC ADDRESS TO 0.0.0.0
+    else if (str.find_first_not_of("0123456789") == std::string::npos)
         return ("0.0.0.0:" + str);
+
+    //  DOES NOT SPECIFY THE PORT: SET THE DEFAULT PORT TO 8080
+    else
+        return (str + ":8080");
 }
 
 // DOES THE SERVER_NAME DIRECTIVE CORRESPOND TO THE HOST OF THE REQUEST ?
@@ -273,12 +275,18 @@ void     ConfigFile::checkErrorConfig(void) {
     // CHECK POSSIBLE SYNTAX ERRORS IN THE LOCATION BLOCK
     if (_content.find("//") != _content.end()) {
 
-        std::cout << "Config File Error: Wrong syntax in the location block" << std::endl;
+        std::cout << red << "Config File Error: Wrong syntax in the location block" << def << std::endl;
         exit(0);
     }
     
     for (; it != _content.end(); it++)
     {
+        // CHECK IF VIRTUAL HOST IS SPECIFIED
+        if (it->first[6] == '0') {
+            std::cout << red << "Config File Error: Virtual host is not specified" << def << std::endl;
+            exit(0);
+        }
+
         // CHECK NB OF VALUES IN DIRECTIVES
         if (it->second.empty() || (it->second.size() > 1 
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "authorized_methods"
@@ -286,7 +294,7 @@ void     ConfigFile::checkErrorConfig(void) {
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "error_page"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "cgi")
             ) {
-                std::cout << "Config File Error: " << it->first << ": Too many values for directive" << std::endl;
+                std::cout << red << "Config File Error: [" << it->first << "] : Too many values for directive" << def << std::endl;
                 exit(0);
             }
         
@@ -294,16 +302,32 @@ void     ConfigFile::checkErrorConfig(void) {
         if (it->first.find("autoindex") != std::string::npos
             && it->second[0].compare("on") && it->second[0].compare("off")) {
 
-                std::cout << "Config File Error: " << it->first << ": autoindex cannot be interpreted" << std::endl;
+                std::cout << red << "Config File Error: [" << it->first << "] : autoindex cannot be interpreted" << def << std::endl;
                 exit(0);
             }
 
+        // COMPLETE LISTEN DIRECTIVE IF INFORMATION IS MISSING 
+        if (it->first.find("listen") != std::string::npos) 
+            it->second[0] = defineHost(it->second[0]);
+
         // CHECK PORT CONFIGURATION
         if (it->first.find("listen") != std::string::npos) {
-            if (std::count(it->second[0].begin(), it->second[0].end(), ':') != 1) {
+            if (std::count(it->second[0].begin(), it->second[0].end(), ':') != 1
+                || it->second[0].find(":") == 0
+                || it->second[0].find(":") == it->second[0].length() - 1) {
 
-                std::cout << "Config File Error: " << it->first << ": Wrong port syntax" << std::endl;
+                std::cout << red << "Config File Error: [" << it->second[0] << "] is not an acceptable host syntax" << def << std::endl;
                 exit(0);
+            }
+            std::string port = it->second[0].substr(it->second[0].find(":") + 1, it->second[0].length());
+            std::string ip = it->second[0].substr(0, it->second[0].find(":"));
+            if (port.find_first_not_of("0123456789") != std::string::npos) {
+                std::cout << red << "Config File Error: [" << port << "] is not an acceptable port syntax" << def << std::endl;
+                exit(0);
+            }
+            if (ip.compare("localhost") != 0 && ip.compare("127.0.0.1") != 0 && ip.compare("0.0.0.0") != 0) {
+                std::cout << red << "Config File Error: [" << ip << "] is not an acceptable ip syntax" << def << std::endl;
+                exit(0);                
             }
         }
 
@@ -313,13 +337,13 @@ void     ConfigFile::checkErrorConfig(void) {
             if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
             || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
 
-                std::cout << "Config File Error: " << it->first << ": Wrong extension" << std::endl;
+                std::cout << red << "Config File Error: [" << it->first << "] is not an acceptable extension" << def << std::endl;
                 exit(0);
             }
         }
     }
     // NO CONFIGURATION ISSUE
-    std::cout << "Config File: ready to be used" << std::endl;
+    std::cout << green << "Config File: ready to be used" << def << std::endl;
 }
 
 // CHECK IF DIRECTIVE IS ALLOWED
