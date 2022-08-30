@@ -42,7 +42,8 @@ int main(int ac, char **av) {
     }
     std::string path = av[1]; 
     ConfigFile  cf(path);
-    // printMapConfig(cf);
-    HDE::testServer t;
+    std::vector<int>    portsToOpen = {8080, 8081, 8082};
+    //printMapConfig(cf);
+    HDE::testServer t(portsToOpen);
 }
 

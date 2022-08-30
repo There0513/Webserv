@@ -40,12 +40,12 @@ namespace HDE {
             int     highSocket; // highest fd
 
             void    buildSelectList(void);
-            void    handle_new_connections();
+            void    handle_new_connections(ListeningSocket *socketToHandle);
             void    setNonBlocking(int);
             void    deal_with_data(int);
             
         public:
-            testServer(int port = 8080);
+            testServer(std::vector<int> port);
             void    launch();
 
             // tmp:

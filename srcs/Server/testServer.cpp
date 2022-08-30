@@ -4,13 +4,15 @@
 #include "../Client/Client.hpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer(int port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
+HDE::testServer::testServer(std::vector<int> port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
+    
+    std::cout << "COUCOU JE SUIS DANS LE CONSTRUCTEUR DU TEST SERVER" << std::endl;
     launch();
 }
 
 void    HDE::testServer::launch() {
 
-    highSocket = getSocket()->getsock();
+    highSocket = getSocket().back()->getsock();
     memset((char *)&connectList, 0, sizeof(connectList));
 
     while (true)
@@ -62,18 +64,22 @@ void    HDE::testServer::accepter() {
     Thus if the listening socket is part of the fd_set, we have to accept a new connection*/
 
 void    HDE::testServer::handler() {
-    if (FD_ISSET(getSocket()->getsock(), &socks))
-        handle_new_connections();
+
+    for (int i = 0; i < getSocket().size(); i++) {
+        
+        if (FD_ISSET(getSocket()[i]->getsock(), &socks))
+            handle_new_connections(getSocket()[i]);
+    }
 }
 
-void    HDE::testServer::handle_new_connections() {
+void    HDE::testServer::handle_new_connections(HDE::ListeningSocket *socketToHandle) {
     std::cout << "\t\t\thandle_new_connections():\n";
 
-    struct sockaddr_in address = getSocket()->getaddress();
+    struct sockaddr_in address = socketToHandle->getaddress();
     int addrlen = sizeof(address);
     int listnum;
 
-    newSocket = accept(getSocket()->getsock(), (struct sockaddr *)&address, (socklen_t *)&addrlen);
+    newSocket = accept(socketToHandle->getsock(), (struct sockaddr *)&address, (socklen_t *)&addrlen);
     if (newSocket < 0) {
 
         perror("accept");
@@ -163,7 +169,8 @@ void    HDE::testServer::buildSelectList() {
 
 /* FD_SET() adds the fd sock to the fd set so that select() will return if a connection comes in on that socket */
 
-    FD_SET(getSocket()->getsock(), &socks);
+    for (int i = 0; i != getSocket().size(); i++)
+        FD_SET(getSocket()[i]->getsock(), &socks);
 
 /* Loop through all the possible connections and add those to the fd set */
 

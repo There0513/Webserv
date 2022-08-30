@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <vector>
 #include "../Sockets/SimpleSocket.hpp"
 #include "../Sockets/BindingSocket.hpp"
 #include "../Sockets/ListeningSocket.hpp"
@@ -32,15 +33,15 @@ namespace HDE {
     class SimpleServer {
 
         private:
-            ListeningSocket *socket;
+            std::vector<ListeningSocket *> socket;
             virtual void accepter() = 0;
             // virtual void handler() = 0;
             // virtual void responder(std::string content, std::string contentType);
 
         public:
-            SimpleServer(int domain, int service, int protocol, int port, u_long interface, int bklog);
+            SimpleServer(int domain, int service, int protocol, std::vector<int> port, u_long interface, int bklog);
             virtual void launch() = 0;
-            ListeningSocket * getSocket();
+            std::vector<ListeningSocket *> getSocket();
     };
 }
 

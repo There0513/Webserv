@@ -12,9 +12,12 @@
 
 #include "SimpleServer.hpp"
 
-HDE::SimpleServer::SimpleServer(int domain, int service, int protocol, int port, u_long interface, int bklog) {
+HDE::SimpleServer::SimpleServer(int domain, int service, int protocol, std::vector<int> port, u_long interface, int bklog) {
     
-    socket = new ListeningSocket(domain, service, protocol, port, interface, bklog);
+    std::vector<int>::iterator  it = port.begin();
+
+    for (; it != port.end(); it++)
+        socket.push_back(new ListeningSocket(domain, service, protocol, *it, interface, bklog));
 }
 
-HDE::ListeningSocket * HDE::SimpleServer::getSocket() { return socket; }
+std::vector<HDE::ListeningSocket *> HDE::SimpleServer::getSocket() { return socket; }
