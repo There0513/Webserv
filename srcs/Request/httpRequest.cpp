@@ -196,7 +196,7 @@ void    httpRequest::handleURL() {   // find url-corresponding route
     //         _url = "index.html";
     // check if query '? =' in _url
     // if root in config.file -> add root:
-        // std::string tmp_root = "www";                // getRoot() from config.file
+        // std::string tmp_root = "www";                // getRoot() from config.file ==> CAPU ==> getValue(host(string), url(string), "root") See line 64 of main.cpp (use a try and catch structure)
         // _url = tmp_root + "/" + _url;
 
     // apply - location/root - alias - queries 
