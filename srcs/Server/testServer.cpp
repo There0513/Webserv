@@ -4,7 +4,9 @@
 #include "../Client/Client.hpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer(int port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) { launch(); }
+HDE::testServer::testServer(int port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
+    launch();
+}
 
 void    HDE::testServer::launch() {
 
@@ -35,17 +37,13 @@ void    HDE::testServer::launch() {
     ex: if fd 4 was originally in the fd set and then it became readable, the fd set contains fd 4 in it */
 
 void    HDE::testServer::accepter() {
-    std::cout << "\t\t\taccepter():\n";
-
     struct timeval  timeout; // timeout for select()
     int readSocks;          // nb of sockets ready for reading
 
     buildSelectList();
     timeout.tv_sec = 1;
     timeout.tv_usec = 0;
-std::cout << "before select\n";
     readSocks = select(highSocket + 1, &socks, (fd_set *) 0, (fd_set *) 0, NULL);
-std::cout << "after select\n";
 
     if (readSocks < 0) {
         perror("select");
@@ -64,8 +62,6 @@ std::cout << "after select\n";
     Thus if the listening socket is part of the fd_set, we have to accept a new connection*/
 
 void    HDE::testServer::handler() {
-    std::cout << "\t\t\thandler():\n";
-
     if (FD_ISSET(getSocket()->getsock(), &socks))
         handle_new_connections();
 }
@@ -101,8 +97,6 @@ void    HDE::testServer::handle_new_connections() {
     Run through our sockets and check to see if anything happened with them, if so service them */
 
 void    HDE::testServer::responder() {
-    std::cout << "\t\t\tresponder():\n";
-
     int listnum;
 
     for (listnum = 0; listnum < 10; listnum++) {
@@ -129,13 +123,11 @@ void    HDE::testServer::deal_with_data(int listnum) {
             // if redirection configured
                 // set redirection status code
                 // create response
-            // else -> handle method-function (GET, POST, DELETE)
-            
-            response.setPageContent(request.readFileContent());
-            response.findContentType(request.getUrl());
-            // recheck valid status code
+            // else -> handle method-function (GET, POST, DELETE):
+            response.request = request;
             response.methodHandler(request.getMethod());
-            handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]); // later in respond() just here for testing
+            // recheck valid status code
+            handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
         }
     }
 }

@@ -34,10 +34,11 @@ void    httpResponse::findContentType(std::string url) {
 }
 
             /* handle methods */
-void    GETMethod() {
+void    httpResponse::GETMethod() {
     std::cout << "\tGET method:\n";
     // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
     // if !cgi:
+
         // find resource    handle path (location, root, ...)
         // check if file exists with stat()
         // if path == directory
@@ -45,15 +46,16 @@ void    GETMethod() {
             // find index.html via readdir(dirStream) + append path + filename
                 // if !index.html -> closedir(dirStream) -> check if autoindex + generate repsponse
             // closedir(dirStream);
-
-            // open file
+        // else open file + set content:
+            setPageContent(request.readFileContent());
+            findContentType(request.getUrl());
 
 
     // handle cgi
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
-void    POSTMethod() {
+void    httpResponse::POSTMethod() {
     std::cout << "\tPOSTmethod:\n";
     // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
     // if !cgi:
@@ -74,7 +76,7 @@ void    POSTMethod() {
 }
 
 // The DELETE method deletes the specified resource.
-void    DELETEMethod() {
+void    httpResponse::DELETEMethod() {
     std::cout << "\tDELETE method:\n";
     // handle path
     // remove path data

@@ -1,5 +1,6 @@
 #ifndef HTTPRESPONSE_HPP
 # define HTTPRESPONSE_HPP
+# include "../Request/httpRequest.hpp"
 # include <iostream>
 # include <map>
 # include <vector>
@@ -12,12 +13,18 @@ class   httpResponse
 
     
     public:
+        httpRequest request;
         httpResponse();
         ~httpResponse();
         void        setPageContent(std::string content);
         std::string getPageContent();
         void        findContentType(std::string url);
 
+
+        /* handle methods */
+        void        GETMethod();
+        void        POSTMethod();
+        void        DELETEMethod();
         void        methodHandler(std::string method);
 
 

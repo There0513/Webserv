@@ -2,8 +2,8 @@
 #include <fstream>
 #include <sstream> // ostringstream
 
-httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _header(NULL),
-_body(""), _statusCode(0), _isChunked(false) {
+httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
+_statusCode(0), _isChunked(false) {
     std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
 	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
@@ -30,7 +30,7 @@ std::cout << "\t\t\tnew _url: " << _url << std::endl;
     data.open(_url);
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
-        _url = "www/errorPages/404notfound.html";
+        _url = "srcs/Server/www/errorPages/404notfound.html";
         data.open(_url);
     }
     buffer << data.rdbuf();  // reading data

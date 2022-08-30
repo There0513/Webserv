@@ -38,10 +38,6 @@ class httpRequest
 
         void            handleURL();
 
-        /* handle methods */
-        void    GETMethod();
-        void    POSTMethod();
-        void    DELETEMethod();
 
 
 
