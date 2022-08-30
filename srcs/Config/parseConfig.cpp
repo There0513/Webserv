@@ -67,7 +67,8 @@ ConfigFile::ConfigFile(std::string const & configFile) {
         _content[_inSection + '/' + _directive] = _valuesVec; // STORE THE PAIR OF _DIRECTIVE + _VALUESVEC IN THE MAP
 
     }
-    checkErrorConfig(); 
+    checkErrorConfig(); // CHECK FOR SYNTAX ERRORS IN THE CONFIG FILE
+    getPorts(); // GET THE LISTEN PORTS IN A VECTOR
 }
 
 // ========================================================= GETTERS AND MEMBER FUNCTIONS TO INTERACT WITH =============================================================
@@ -104,6 +105,23 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
     if (it == _content.end())
         throw ValueNotFoundException();
     return it->second;
+}
+
+// GET PORTS TO OPEN IN LISTEN MODE
+void    ConfigFile::getPorts() {
+
+    std::map<std::string, std::vector<std::string>>::iterator   it = _content.begin();
+
+    for (; it != _content.end(); it++) {
+        if (it->first.find("listen") != std::string::npos) {
+
+            std::string stringPort = it->second[0].substr(it->second[0].find(":") + 1, it->second[0].length());
+            int port = std::atoi(stringPort.c_str());
+            
+            if (std::find(portsToOpen.begin(), portsToOpen.end(), port) == portsToOpen.end())
+                portsToOpen.push_back(port);
+        }
+    }
 }
 
 // FIND PATH TO THE FILES INSIDE THE SERVER 

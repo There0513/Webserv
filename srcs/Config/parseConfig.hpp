@@ -26,8 +26,8 @@ class ConfigFile {
 
     private:
 
-        //A map that will contain the directive (ex. port, location, root, server_name) 
-        //and a vector containing the possible values (ex. if there are several server_names)
+        /* A map that will contain the directive (ex. port, location, root, server_name) 
+        and a vector containing the possible values (ex. if there are several server_names)*/
 
         std::map<std::string, std::vector<std::string> >    _content;
         std::string                                         _directive; // A string containing the directive
@@ -55,11 +55,15 @@ class ConfigFile {
 
             //Getters
             std::map<std::string, std::vector<std::string> > const & getMap() const;
-            std::vector<std::string> const &                         getValue(std::string const & port, std::string const & url, std::string const & directive);
+            std::vector<std::string> const &                         getValue(std::string const & host, std::string const & url, std::string const & directive);
+            void                                                     getPorts();
 
             //Useful member functions 
-            std::string     findPath(std::string const & port, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root
-            bool            isMethodAllowed(std::string const & port, std::string const & url, std::string const & method); // A function to check if the required method is allowed
+            std::string     findPath(std::string const & host, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root
+            bool            isMethodAllowed(std::string const & host, std::string const & url, std::string const & method); // A function to check if the required method is allowed
+            
+            //ports to open in listen mode
+            std::vector<int>    portsToOpen;
 
             //Exception classes 
             class   ValueNotFoundException : public std::exception {
