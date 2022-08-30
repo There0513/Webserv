@@ -1,0 +1,88 @@
+notes:
+needed structure to handle request part:
+CONFIG CLASS:
+    - from configuration file:
+        - host + port
+        - root directory
+    LOCATION CLASS(?!):
+        - locations             map<string, locationClass(with all informations inside? index,methods etc)>
+                /   alias   locRoot index   auto    method  upload  redirection
+        - default error pages   map<int, string>
+        - max client body size
+        - 301 redirection
+        - upload option
+        - autoindex option
+
+
+  SERVER CLASS:
+    - map with all servers ('server_map') map<fd, server> to iterate through for (read/write to process the servers requests)
+    - loop through server_map to connect (accept etc.) + save sockets of each (in map of sockets?!)
+    - each server inside server_map has it's own requests, addr, fd's, listen variables config
+
+    - loop through sockets (sockets_map)
+        - read into buffer
+        - create httpRequest (parsing)
+        - check if valid ()
+        - what kind of content we are going to send? html/js/png/... -> add Content-Type: text/html ...
+        - 'create' location 'folder/index.html' with root (ROOT/folder/index.html)  | handle alias etc.
+        - check for index/autoindex/create index.html file content in page_content variable as string if index not found (+ autoindex on)
+        - check for query parameters (ex GET: values visible in URL: '/Register.html&user=john&login=jonny')
+        - add founded file (ex: index.html) to page_content variable
+
+    - response:
+        - send response with send or write
+
+- POST: content-type + content-lenght needed
+Le body pour GET et DELETE ça sert à rien
+    on peut considérer la requête comme parsée dès qu’on a fini de mettre les headers
+Pour POST on peut mettre une query pour un formulaire ou le contenu d’un texte à générer
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!    MAIN LOOP :  !!!!!!!!!!!!!!!!!!!!!!!!
+
+set server
+while
+{
+accept new connections for each server...
+
+    while server.host != server.host.end {          // check events for each server
+        while clients                              // check events for each client
+        {
+            // handle events( , , )
+            if client ready to read {   FD_ISSET(..)
+                read/recv
+                parse
+                check if valid
+            }
+            if client ready to write {  FD_ISSET(..)
+
+            }
+            else {
+                ... do not time out
+            }
+        }
+    }
+}
+close fds + destroy servers
+
+
+
+
+
+receive a connection
+                                                map <fd, server>  _server
+    in _server      if (FD_ISSET(fd, &reading_set))
+        socket = accept connection
+            insert socket in _socket map        map <socket, server> _socket
+        
+    in _socket map  if (FD_ISSET(socket, &reading_set))
+        receive request in buffer read/recv + check
+            if read finished:
+                process with socket (chunk) + push to _ready map 
+
+    if something in _ready map:
+		FD_SET(*it, &writing_set);
+    
+    in _ready:
+        if (FD_ISSET(*it, &writing_set))
+            _sockets[*it]->send(*it);
