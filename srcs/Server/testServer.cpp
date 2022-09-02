@@ -1,5 +1,6 @@
 #include "testServer.hpp"
 #include "../Request/httpRequest.hpp"
+#include "../Config/parseConfig.hpp"
 #include "../Response/httpResponse.hpp"
 #include "../Client/Client.hpp"
 #include <fcntl.h>

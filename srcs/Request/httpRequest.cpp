@@ -1,4 +1,5 @@
 #include "httpRequest.hpp"
+#include "../Config/parseConfig.hpp"
 #include <fstream>
 #include <sstream> // ostringstream
 
@@ -139,14 +140,18 @@ void    httpRequest::parseHeader(std::string buffer) {
 void    httpRequest::parseBody() {
     std::cout << "_body: |" << _body << "|" << std::endl;
     // if 'Content-Length' check if parseBody needed +++
-   
 }
 
 int     httpRequest::isValid() {
-    checkFirstLine(); // if -1  -> return/send error response
-
+    if (checkFirstLine() == -1) { // if -1  -> return/send error response
+        std::cout << "ERROR: Invalid request" << std::endl;
+        return -1;
+    } 
     // if POST: content-length header
-    // check if method is allowed
+    if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
+        std::cout << "ERROR: Method is not allowed for this server" << std::endl;
+        return -1;
+    }
     // min/max length content
     return 1;   // all good
 }
@@ -211,6 +216,21 @@ void    httpRequest::handleURL() {   // find url-corresponding route
 
 std::string httpRequest::getUrl() {
     return _url;
+}
+
+void    httpRequest::setHost(std::string host) {
+
+    // get the Host of the request
+    int start = host.find("Host");
+    
+    if ((start != std::string::npos)) {
+        std::string tmp = host.substr(start, host.length());
+        _host = host.substr(start, tmp.find('\n'));
+    }
+}
+
+std::string    httpRequest::getHost() {
+    return _host;
 }
 
 // void   httpRequest::setContentType(std::string type) {
