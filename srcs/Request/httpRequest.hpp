@@ -10,6 +10,10 @@ class httpRequest
         std::string _method;     // -> first line
         std::string _url;        // -> first line
         std::string _version;    // -> first line
+        
+        std::string _host;       // -> body Host
+        std::string _ip;        //  -> body IP (inside Host)
+        std::string _port;      //  -> body port (inside Host)
 
 	    std::vector<std::pair<std::string, std::string > >  _header;
         // std::string _contentType;
@@ -45,6 +49,9 @@ class httpRequest
 
         void        setUrl(std::string url);
         std::string getUrl();
+
+        void        setHost(std::string host);
+        std::string getHost();
 
         // void        setContentType(std::string type);
         // std::string getContentType();

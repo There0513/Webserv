@@ -1,4 +1,5 @@
 #include "httpRequest.hpp"
+#include "../Config/parseConfig.hpp"
 #include <fstream>
 #include <sstream> // ostringstream
 
@@ -68,7 +69,7 @@ int     httpRequest::checkFirstLine() {
         std::cerr << "Error: HTTP Version not valid." << std::endl;
         _statusCode = 505;  // "HTTP Version not supported"
         return -1;
-    }
+    }        
     std::cout << "\t\t\t\tcheckFirstLine OK\n";
     return 1;
 }
@@ -138,15 +139,20 @@ void    httpRequest::parseHeader(std::string buffer) {
 
 void    httpRequest::parseBody() {
     std::cout << "_body: |" << _body << "|" << std::endl;
+    // set host
     // if 'Content-Length' check if parseBody needed +++
    
 }
 
 int     httpRequest::isValid() {
-    checkFirstLine(); // if -1  -> return/send error response
 
+    
+    // if (checkFirstLine() == -1 
+    //     || ConfigFile::isMethodAllowed(_host, _url, _method) == false) {  // check if method is allowed
+    //     std::cout << "ERROR: Invalid Request" << std::endl;
+    //     return -1; // if -1  -> return/send error response
+    // }
     // if POST: content-length header
-    // check if method is allowed
     // min/max length content
     return 1;   // all good
 }
@@ -187,6 +193,7 @@ void    httpRequest::parseRequest(std::string buffer) {
         the message is either truncated, or padded with nulls to the specified length.
         The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
         */
+        setHost(buffer);
         parseBody();
     }
 }
@@ -211,6 +218,28 @@ void    httpRequest::handleURL() {   // find url-corresponding route
 
 std::string httpRequest::getUrl() {
     return _url;
+}
+
+void    httpRequest::setHost(std::string host) {
+
+    // get the Host of the request
+    int start = host.find("Host");
+    
+    if ((start != std::string::npos)) {
+        std::string tmp = host.substr(start, host.length());
+        _host = host.substr(start, tmp.find('\n'));
+    }
+
+    // get the IP and the port in separate variables
+    int first = _host.find_first_of(":");
+    int second = _host.find_last_of(":");
+
+    _ip = _host.substr( first + 1, second -  first - 1);
+    _port = _host.substr( second + 1, _host.length() - 1);
+}
+
+std::string    httpRequest::getHost() {
+    return _host;
 }
 
 // void   httpRequest::setContentType(std::string type) {

@@ -74,7 +74,6 @@ ConfigFile::ConfigFile(std::string const & configFile) {
 
 // GET MAP
 std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() const { 
-    
     return _content; 
 }
 
