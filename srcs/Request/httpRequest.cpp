@@ -9,7 +9,7 @@ Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
 _statusCode(0), _isChunked(false) {
-    std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
+    // std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
 	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
     // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
     // parse buffer (method, url, version, headerFields, body) -> add header:
@@ -24,6 +24,7 @@ httpRequest::~httpRequest() {}
 std::string     httpRequest::readFileContent() {
     std::ifstream       data;
     std::ostringstream  buffer;
+    // std::string autoindex = _ConfigFile->getValue(_host, _url, "autoindex")[0];
 
 std::cout << "\t\t\t_url: " << _url << std::endl;
     if (_url[0] == '/' && _url.length() > 1)
@@ -141,18 +142,20 @@ void    httpRequest::parseHeader(std::string buffer) {
     */
 }
 
-void    httpRequest::parseBody() {
+void    httpRequest::parseBody(std::string buffer) {
     std::cout << "_body: |" << _body << "|" << std::endl;
+    setHost(buffer);
     // if 'Content-Length' check if parseBody needed +++
 }
 
 int     httpRequest::isValid(ConfigFile & cf) {
-    if (checkFirstLine() == -1) { // if -1  -> return/send error response
-        std::cout << "ERROR: Invalid request" << std::endl;
-        return -1;
-    } 
+    _ConfigFile = &cf;
     // if POST: content-length header
     try {
+        if (checkFirstLine() == -1) { // if -1  -> return/send error response
+            std::cout << "ERROR: Invalid request" << std::endl;
+            return -1;
+        } 
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
             return -1;
@@ -164,8 +167,7 @@ int     httpRequest::isValid(ConfigFile & cf) {
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << rouge << e.what() << defi << std::endl;
     }
-
-    // min/max length content
+    // min/max length content --> only for POST method (?)
     return 1;   // all good
 }
 
@@ -205,14 +207,22 @@ void    httpRequest::parseRequest(std::string buffer) {
         the message is either truncated, or padded with nulls to the specified length.
         The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
         */
-        parseBody();
-        setHost(buffer);
+        parseBody(buffer);
     }
 }
 
-void    httpRequest::handleURL() {   // find url-corresponding route
-    // if (_url.size() <= 1 && _url[0] == '\'')
-    //         _url = "index.html";
+void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
+
+    try { 
+        _url = cf.findPath(_host, _url);
+        _url.pop_back();
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
     // check if query '? =' in _url
     // if root in config.file -> add root:
         // std::string tmp_root = "www";                // getRoot() from config.file ==> CAPU ==> getValue(host(string), url(string), "root") See line 64 of main.cpp (use a try and catch structure)
@@ -233,7 +243,6 @@ std::string httpRequest::getUrl() {
 }
 
 void    httpRequest::setHost(std::string buffer) {
-
     // get the Host of the request
     int start = buffer.find_first_of(":") + 2;
     

@@ -18,6 +18,8 @@ class httpRequest
         // std::string _contentType;
         std::string _body;
 
+        ConfigFile*  _ConfigFile;
+
         int         _statusCode;
         bool        _isChunked;
 
@@ -35,11 +37,11 @@ class httpRequest
         void            getFirstLine(std::string str, std::string deli);
         int             checkFirstLine();
         void            parseHeader(std::string buffer);
-        void            parseBody();
+        void            parseBody(std::string buffer);
 
         int             isValid(ConfigFile & cf);
 
-        void            handleURL();
+        void            handleURL(ConfigFile & cf);
 
 
 /* SETTERS - GETTERS */
