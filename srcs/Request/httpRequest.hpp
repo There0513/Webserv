@@ -3,6 +3,7 @@
 # include <iostream>
 # include <map>
 # include <vector>
+#include "../Config/parseConfig.hpp"
 
 class httpRequest
 {   // tests
@@ -36,11 +37,9 @@ class httpRequest
         void            parseHeader(std::string buffer);
         void            parseBody();
 
-        int             isValid();
+        int             isValid(ConfigFile & cf);
 
         void            handleURL();
-
-
 
 
 /* SETTERS - GETTERS */
@@ -48,7 +47,7 @@ class httpRequest
         void        setUrl(std::string url);
         std::string getUrl();
 
-        void        setHost(std::string host);
+        void        setHost(std::string buffer);
         std::string getHost();
 
         // void        setContentType(std::string type);

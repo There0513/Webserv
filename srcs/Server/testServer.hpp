@@ -17,6 +17,7 @@
 #include "SimpleServer.hpp"
 #include "../Client/Client.hpp"
 #include "../Request/httpRequest.hpp"
+#include "../Config/parseConfig.hpp"
 
 namespace HDE {
 
@@ -45,7 +46,8 @@ namespace HDE {
             void    deal_with_data(int);
             
         public:
-            testServer(std::vector<int> port);
+            testServer(ConfigFile cf); 
+            ConfigFile* _ConfigFile; // Configuration file defined in the main
             void    launch();
 
             // tmp:

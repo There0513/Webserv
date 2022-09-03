@@ -1,7 +1,11 @@
 #include "httpRequest.hpp"
-#include "../Config/parseConfig.hpp"
 #include <fstream>
 #include <sstream> // ostringstream
+#include "../Config/colormod.hpp"
+
+Color::Modifier		rouge(Color::FG_RED);
+Color::Modifier		defi(Color::FG_DEFAULT);
+
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
 _statusCode(0), _isChunked(false) {
@@ -142,16 +146,25 @@ void    httpRequest::parseBody() {
     // if 'Content-Length' check if parseBody needed +++
 }
 
-int     httpRequest::isValid() {
+int     httpRequest::isValid(ConfigFile & cf) {
     if (checkFirstLine() == -1) { // if -1  -> return/send error response
         std::cout << "ERROR: Invalid request" << std::endl;
         return -1;
     } 
     // if POST: content-length header
-    if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
-        std::cout << "ERROR: Method is not allowed for this server" << std::endl;
-        return -1;
+    try {
+        if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
+            std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
+            return -1;
+        }
     }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
+
     // min/max length content
     return 1;   // all good
 }
@@ -193,6 +206,7 @@ void    httpRequest::parseRequest(std::string buffer) {
         The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
         */
         parseBody();
+        setHost(buffer);
     }
 }
 
@@ -218,14 +232,14 @@ std::string httpRequest::getUrl() {
     return _url;
 }
 
-void    httpRequest::setHost(std::string host) {
+void    httpRequest::setHost(std::string buffer) {
 
     // get the Host of the request
-    int start = host.find("Host");
+    int start = buffer.find_first_of(":") + 2;
     
     if ((start != std::string::npos)) {
-        std::string tmp = host.substr(start, host.length());
-        _host = host.substr(start, tmp.find('\n'));
+        std::string tmp = buffer.substr(start, buffer.length());
+        _host = buffer.substr(start, tmp.find('\n'));
     }
 }
 

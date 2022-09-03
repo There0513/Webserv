@@ -34,7 +34,7 @@ class ConfigFile {
         std::vector<std::string>                            _valuesVec; // A vector containing the possible values
         std::string                                         _inSection; // A string containing the section 
 
-        std::string     getSection(std::string const & port, std::string const & url, std::string const & directive); // A function that returns the Section path where the value is
+        std::string     getSection(std::string const & host, std::string const & url, std::string const & directive); // A function that returns the Section path where the value is
         std::string     findServer(std::string const & host); // A function to find the first server with the port corresponding to the request
 
         std::string     defineHost(std::string str);
@@ -50,9 +50,10 @@ class ConfigFile {
         std::vector<std::string>    fillVector(std::string const & value);
 
     public:
-            //Constructor
+            //Constructors
             ConfigFile(std::string const & configFile);
-
+         	ConfigFile & operator=(ConfigFile const & rhs);
+           
             //Getters
             std::map<std::string, std::vector<std::string> > const & getMap() const;
             std::vector<std::string> const &                         getValue(std::string const & host, std::string const & url, std::string const & directive);
@@ -84,4 +85,3 @@ class ConfigFile {
 };
 
 #endif
-

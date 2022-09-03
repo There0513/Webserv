@@ -40,10 +40,13 @@ int main(int ac, char **av) {
         std::cout << "Usage: ./webserv [Config File]" << std::endl;        
         return (1); 
     }
-    std::string path = av[1]; 
+
+    std::string path = av[1];
     ConfigFile  cf(path);
+
     //printMapConfig(cf);
-    HDE::testServer t(cf.portsToOpen);
+    
+    HDE::testServer t(cf);
 
     std::cout << std::endl;
 

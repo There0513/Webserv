@@ -1,12 +1,12 @@
 #include "testServer.hpp"
 #include "../Request/httpRequest.hpp"
-#include "../Config/parseConfig.hpp"
 #include "../Response/httpResponse.hpp"
 #include "../Client/Client.hpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer(std::vector<int> port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
-    
+HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
+
+    _ConfigFile = &cf;
     launch();
 }
 
@@ -124,7 +124,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
     else {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
-        if (request.isValid() != -1) {// check if request is valid
+        if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
             request.handleURL();
             // if redirection configured
                 // set redirection status code
