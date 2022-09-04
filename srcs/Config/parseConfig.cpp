@@ -30,6 +30,7 @@ ConfigFile::ConfigFile(std::string const & configFile) {
     
     int                     posEqual;
     int                     flag = 0;
+    _nbVirtualHosts = 0;
 
     while (std::getline(file, line)) {
 
@@ -43,8 +44,10 @@ ConfigFile::ConfigFile(std::string const & configFile) {
 
             _inSection = trim(line.substr(1, line.find(']') -1));
 
-            if (!_inSection.compare("server")) 
+            if (!_inSection.compare("server")) {
                 _inSection.assign("server" + std::to_string(++flag));
+                _nbVirtualHosts++;
+            }
 
             else if (!_inSection.compare("location/")) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
@@ -97,18 +100,19 @@ std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() co
 }
 
 // GET BLOCK NAME
-std::string ConfigFile::getSection(std::string const & host, std::string const & url, std::string const & directive) {
+std::string ConfigFile::getSection(std::string const & host, std::string url, std::string const & directive) {
 
     std::string server = findServer(host);
     std::string str;
 
+    if (url.find(".") != std::string::npos)
+        url = url.substr(0, url.find_last_of("/"));
     if (!url.compare(""))
         str = server + directive; 
     else if (!url.compare("/"))
         str = server + "location" + url + directive; 
     else
         str = server + "location" + url + "/" + directive;
-
     return str;
 }
 
@@ -146,11 +150,27 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
     try {
 
-        return (getValue(port, url, "root")[0] + url);
+        std::string root = getValue(port, url, "root")[0];
+
+        if (url.find(".") == std::string::npos) //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
+            return (root + checkIndex(port, url, root));
+        else {
+            std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
+            return (root + extension); //else we are looking for a file, so append the file to the root directory if any to find the file
+        }
     }
     catch (ConfigFile::ValueNotFoundException &e) {
 
-        return (getValue(port, "", "root")[0] + url);
+        std::string root = getValue(port, "", "root")[0];
+
+        if (url.find(".") == std::string::npos) {
+            std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
+            return (root + checkIndex(port, url, root));
+        }
+        else {
+            std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
+            return (root + extension); 
+        }
     }
 }
 
@@ -303,6 +323,7 @@ void     ConfigFile::checkErrorConfig(void) {
         // CHECK NB OF VALUES IN DIRECTIVES
         if (it->second.empty() || (it->second.size() > 1 
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "authorized_methods"
+            && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "index"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "server_name"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "error_page"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "cgi")
@@ -355,6 +376,10 @@ void     ConfigFile::checkErrorConfig(void) {
             }
         }
     }
+    if (checkRoot() == 0) {
+        std::cout << red << "Config File Error: mandatory directives not present in all virtual hosts" << def << std::endl;
+        exit(0);
+    }
     // NO CONFIGURATION ISSUE
     std::cout << green << "Config File: ready to be used" << def << std::endl;
 }
@@ -371,6 +396,60 @@ bool    ConfigFile::checkDirective(std::string dir) {
     if (std::find(listOfDir.begin(), listOfDir.end(), dir) != listOfDir.end())
         return true;
     return false;
+}
+
+// CHECK WHICH INDEX TO PICK FROM THE INDEX DIRECTIVE
+std::string ConfigFile::checkIndex(std::string const & host, std::string const & url, std::string const & root) {
+    
+    std::vector<std::string>            indexList;
+    std::vector<std::string>::iterator  it;
+    std::ifstream                       data;
+
+    try {
+        indexList = getValue(host, url, "index");
+        for (it = indexList.begin(); it != indexList.end(); it++) {
+            data.open(root + "/" + *it);
+            if (data) 
+                return ("/" + *it);
+        }
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    return ("/index.html");
+}
+
+// CHECK IF THERE IS A ROOT AT LEAST IN EACH SERVER BLOCK
+bool    ConfigFile::checkRoot() {
+    
+    std::map<std::string, std::vector<std::string> >::iterator  it = _content.begin();
+    int nbListen = 0;
+    int nbRoot = 0;
+
+    for (; it != _content.end(); it++) {
+        
+        if (it->first.find ("listen") != std::string::npos) {
+            
+            std::string prefix = it->first.substr(0, it->first.find("listen"));
+            if (std::count(prefix.begin(), prefix.end(), '/') < 2)
+                nbListen++;
+        }
+    }
+    for (it = _content.begin(); it != _content.end(); it++) {
+            
+        if (it->first.find ("root") != std::string::npos) {
+            
+            std::string prefix = it->first.substr(0, it->first.find("root"));
+            if (std::count(prefix.begin(), prefix.end(), '/') < 2)
+                nbRoot++;
+        }
+    }
+    if (nbListen >= _nbVirtualHosts && nbRoot >= _nbVirtualHosts)
+        return 1;
+    return 0;
 }
 
 // ===================================================== UTILS ===========================================================

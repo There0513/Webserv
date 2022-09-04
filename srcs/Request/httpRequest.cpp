@@ -29,8 +29,6 @@ std::string     httpRequest::readFileContent() {
 std::cout << "\t\t\t_url: " << _url << std::endl;
     if (_url[0] == '/' && _url.length() > 1)
         _url = _url.substr(1, _url.length());
-    if (_url[0] == '/' && _url.length() == 1) // && autoindex on
-        _url = "index.html";
 std::cout << "\t\t\tnew _url: " << _url << std::endl;
 
     data.open(_url);
@@ -149,23 +147,27 @@ void    httpRequest::parseBody(std::string buffer) {
 }
 
 int     httpRequest::isValid(ConfigFile & cf) {
+   
     _ConfigFile = &cf;
     // if POST: content-length header
     try {
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
             std::cout << "ERROR: Invalid request" << std::endl;
-            return -1;
-        } 
+            _url = "srcs/Server/www/errorPages/400badrequesterror.html";
+        }
+        cf.getValue(_host, _url, "authorized_methods");
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
-            return -1;
+            _url = "srcs/Server/www/errorPages/400badrequesterror.html";
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         std::cout << rouge << e.what() << defi << std::endl;
+        _url = "srcs/Server/www/errorPages/404notfound.html";
     }
     catch (ConfigFile::ValueNotFoundException &e) {
-        std::cout << rouge << e.what() << defi << std::endl;
+        std::cout << rouge << e.what() << " Check the URI of your request." << defi << std::endl;
+        _url = "srcs/Server/www/errorPages/404notfound.html";
     }
     // min/max length content --> only for POST method (?)
     return 1;   // all good
@@ -213,9 +215,11 @@ void    httpRequest::parseRequest(std::string buffer) {
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
-    try { 
-        _url = cf.findPath(_host, _url);
-        _url.pop_back();
+    try {
+
+        if (_url.find("error") == std::string::npos)
+            _url = cf.findPath(_host, _url); // find the path to the right file inside the server
+
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         std::cout << rouge << e.what() << defi << std::endl;
