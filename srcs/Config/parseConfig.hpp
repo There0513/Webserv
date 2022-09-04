@@ -61,6 +61,7 @@ class ConfigFile {
             std::map<std::string, std::vector<std::string> > const & getMap() const;
             std::vector<std::string> const &                         getValue(std::string const & host, std::string const & url, std::string const & directive);
             void                                                     getPorts();
+            std::string                                              getErrorPage(std::string const & host, std::string const & error);
 
             //Useful member functions 
             std::string     findPath(std::string const & host, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root

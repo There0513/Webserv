@@ -188,6 +188,24 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
     return false;
 }
 
+std::string     ConfigFile::getErrorPage(std::string const & host, std::string const & error) {
+
+    try {
+
+        std::vector<std::string> errorPage = getValue(host, "", "error_page");
+        std::vector<std::string>::reverse_iterator rit = std::find(errorPage.rbegin(), errorPage.rend(), error);
+        if (rit != errorPage.rend())
+            return ("srcs/Server/www/errorPages" + *rit);
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    return ("srcs/Server/www/errorPages/404notfound.html");
+}
+
 // ================================== FIND THE RIGHT SERVER TO SERVE THE REQUEST ======================================
 
 
@@ -365,17 +383,18 @@ void     ConfigFile::checkErrorConfig(void) {
             }
         }
 
-        // CHECK PAGES EXTENSION
-        if (it->first.find("error_page") != std::string::npos) {
+        // // CHECK PAGES EXTENSION
+        // if (it->first.find("error_page") != std::string::npos) {
 
-            if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
-            || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
+        //     if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
+        //     || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
 
-                std::cout << red << "Config File Error: [" << it->first << "] is not an acceptable extension" << def << std::endl;
-                exit(0);
-            }
-        }
+        //         std::cout << red << "Config File Error: [" << it->second << "] is not an acceptable extension" << def << std::endl;
+        //         exit(0);
+        //     }
+        // }
     }
+    // Check that all the mandatory directives are present in each server block
     if (checkRoot() == 0) {
         std::cout << red << "Config File Error: mandatory directives not present in all virtual hosts" << def << std::endl;
         exit(0);

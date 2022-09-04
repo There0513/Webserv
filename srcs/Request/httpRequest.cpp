@@ -153,21 +153,21 @@ int     httpRequest::isValid(ConfigFile & cf) {
     try {
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
             std::cout << "ERROR: Invalid request" << std::endl;
-            _url = "srcs/Server/www/errorPages/400badrequesterror.html";
+            _url = cf.getErrorPage(_host, "400");
         }
         cf.getValue(_host, _url, "authorized_methods");
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
-            _url = "srcs/Server/www/errorPages/400badrequesterror.html";
+            _url = cf.getErrorPage(_host, "400");
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         std::cout << rouge << e.what() << defi << std::endl;
-        _url = "srcs/Server/www/errorPages/404notfound.html";
+        _url = cf.getErrorPage(_host, "404");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << rouge << e.what() << " Check the URI of your request." << defi << std::endl;
-        _url = "srcs/Server/www/errorPages/404notfound.html";
+        _url = cf.getErrorPage(_host, "404");
     }
     // min/max length content --> only for POST method (?)
     return 1;   // all good
