@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:05:16 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/30 11:48:36 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/06 12:01:54 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ int main(int ac, char **av) {
     }
     std::string path = av[1]; 
     ConfigFile  cf(path);
-    //printMapConfig(cf);
+    printMapConfig(cf);
     HDE::testServer t(cf.portsToOpen);
 
     std::cout << std::endl;

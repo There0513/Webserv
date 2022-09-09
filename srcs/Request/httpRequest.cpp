@@ -177,10 +177,10 @@ void    httpRequest::parseRequest(std::string buffer) {
         std::string *val = getHeaderValue("Transfer-Encoding");
         if (val) {
             if (val->find("chunked") != std::string::npos)
-                _isChunked = true;
+                _isChunked = true;  // -> first line is hexadecimal value that tells the extraction length of the second line
         }
-        else if (getHeaderValue("Content-Length")) {
-        }
+        // else if (getHeaderValue("Content-Length")) {
+        // }
         /*
         The Content-Length is optional in an HTTP request. For a GET or DELETE the length must be zero.
         For POST, if Content-Length is specified and it does not match the length of the message-line,
@@ -227,6 +227,14 @@ void    httpRequest::setMethod(std::string method) {
 
 std::string httpRequest::getMethod() {
     return _method;
+}
+
+void    httpRequest::setStatusCode(int StatusCode) {
+    _statusCode = StatusCode;
+}
+
+int     httpRequest::getStatusCode() {
+    return _statusCode;
 }
 
 std::string *httpRequest::getHeaderValue(std::string const &key) {

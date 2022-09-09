@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   testServer.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/27 16:28:23 by threiss          ###   ########.fr       */
+/*   Updated: 2022/08/31 08:20:39 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@ namespace HDE {
         private:
             char    buffer[30000] = {0};
             int     newSocket;
-            int     _ret; // tmp?! return of read()
+            int     _ret;
             void    accepter();
-            void    handler();  // tmp theresa:  // => methodHandler() in response ?!
+            void    handler();
             void    responder();
             void    handleResponse(std::string content, std::string contentType, int connectListSocket);
             void    responder(std::string content, std::string contentType);

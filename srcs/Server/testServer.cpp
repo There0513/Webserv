@@ -123,11 +123,13 @@ void    HDE::testServer::deal_with_data(int listnum) {
     else {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
+        // if (request.getUrl() == "/favicon.ico")
+        //     return;
         if (request.isValid() != -1) {// check if request is valid
             request.handleURL();
             // if redirection configured
                 // set redirection status code
-                // create response
+                // create response (page content + content type)
             // else -> handle method-function (GET, POST, DELETE):
             response.request = request;
             response.methodHandler(request.getMethod());
@@ -138,23 +140,16 @@ void    HDE::testServer::deal_with_data(int listnum) {
 }
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
-    // process the request - create response
-    // handle method (GET POST DELETE)
-    // std::cout << "page-content = |" << content << "|" << std::endl;
     std::string answer = "HTTP/1.1 200 OK\nContent-Type: ";
-    // add code + code description
+    // add statusCode + statusCode-description
     answer+= contentType;
     answer+= "; charset=UTF-8\nContent-Length:";
     answer+= std::to_string(content.length());
     answer+= "\n\n";
     answer+= content;
 
-    //  WRITE
-    // send response
     // std::cout << "answer = [" << answer << "]\n" << std::endl;
     write(connectListSocket, answer.c_str(), answer.size());
-    //  CLOSE   already done by capucine
-    // close(connectListSocket);
 }
 
 void    HDE::testServer::buildSelectList() {

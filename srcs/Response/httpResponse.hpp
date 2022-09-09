@@ -27,6 +27,9 @@ class   httpResponse
         void        DELETEMethod();
         void        methodHandler(std::string method);
 
+        /* handle CGI */
+        int         checkCgi();
+        void        handleCgi();
 
         void        setContentType(std::string type);
         std::string getContentType();

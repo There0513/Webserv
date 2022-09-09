@@ -52,6 +52,8 @@ class httpRequest
         void        setMethod(std::string method);
         std::string getMethod();
 
+        void        setStatusCode(int nbr);
+        int         getStatusCode();
 
         std::string *getHeaderValue(std::string const &key);
 };
