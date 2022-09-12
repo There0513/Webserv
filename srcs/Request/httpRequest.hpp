@@ -11,6 +11,7 @@ class httpRequest
         std::string _url;        // -> first line
         std::string _version;    // -> first line
 
+        std::string _query;
 	    std::vector<std::pair<std::string, std::string > >  _header;
         std::string _body;
 
@@ -30,6 +31,7 @@ class httpRequest
         void            parseRequest(std::string buffer);
         void            getFirstLine(std::string str, std::string deli);
         int             checkFirstLine();
+        void            setQuery();
         void            parseHeader(std::string buffer);
         void            parseBody();
 

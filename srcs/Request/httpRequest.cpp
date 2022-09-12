@@ -113,7 +113,7 @@ void    httpRequest::parseHeader(std::string buffer) {
     //     std::cout << "key: " << it->first << " : val: " << it->second << "\n";
 }
 
-void    httpRequest::parseBody() {
+void    httpRequest::parseBody() {  // already set in parseRequest
     std::cout << "_body: |" << _body << "|" << std::endl;
     // if 'Content-Length' check if parseBody needed +++
 }
@@ -126,6 +126,16 @@ int     httpRequest::isValid() {
     // check if method is allowed
     // min/max length content
     return 1;   // all good
+}
+
+void    httpRequest::setQuery() {
+    size_t  pos;
+
+    if ((pos = _url.find_first_of('?')) != std::string::npos){
+        _query = _url.substr(pos + 1, _url.size());
+        _url = _url.substr(0, pos);
+    }
+    std::cout << "query: " << _query << "\n";
 }
 
 /*  chunked:
@@ -145,6 +155,7 @@ void    httpRequest::parseRequest(std::string buffer) {
         _body = buffer.substr(start + 4, end -1);
 
         getFirstLine(buffer);
+        setQuery();
         start = buffer.find("\r\n");
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);

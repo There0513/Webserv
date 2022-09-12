@@ -1,11 +1,1 @@
-Content-type:text/html
-
-
-<!DOCTYPE html>
-<body class="stylito">
-<link rel="icon" href="data:,"> 
-<center>
-<h1>Coucou sd dd</h1>
-<center>
-</body>
-</html>
+['srcs/Server/www/cgi-bin/pythonGet.py']

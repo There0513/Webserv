@@ -12,7 +12,7 @@ print ("Content-type:text/html\r\n\r\n")
 print ("<!DOCTYPE html>")
 
 
-print ("<body class=\"stylito\">")
+print ("<body>")
 print ("<link rel=\"icon\" href=\"data:,\"> ")
 print ("<center>")
 print ("<h1>Coucou %s %s</h1>" % (firstName, lastName))
