@@ -12,7 +12,6 @@ class httpRequest
         std::string _version;    // -> first line
 
 	    std::vector<std::pair<std::string, std::string > >  _header;
-        // std::string _contentType;
         std::string _body;
 
         int         _statusCode;
@@ -46,8 +45,7 @@ class httpRequest
         void        setUrl(std::string url);
         std::string getUrl();
 
-        // void        setContentType(std::string type);
-        // std::string getContentType();
+        std::string getBody();
 
         void        setMethod(std::string method);
         std::string getMethod();
@@ -56,6 +54,7 @@ class httpRequest
         int         getStatusCode();
 
         std::string *getHeaderValue(std::string const &key);
+        void        setHeaderValue(std::string key, std::string value);
 };
 
 #endif

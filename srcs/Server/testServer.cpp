@@ -72,7 +72,6 @@ void    HDE::testServer::handler() {
 }
 
 void    HDE::testServer::handle_new_connections(HDE::ListeningSocket *socketToHandle) {
-    std::cout << "\t\t\thandle_new_connections():\n";
 
     struct sockaddr_in address = socketToHandle->getaddress();
     int addrlen = sizeof(address);
@@ -107,8 +106,8 @@ void    HDE::testServer::responder() {
     for (listnum = 0; listnum < 10; listnum++) {
         if (FD_ISSET(connectList[listnum], &socks))
             deal_with_data(listnum);
-        else
-            std::cout << "nothing to deal with.\n";
+        // else
+            // std::cout << "nothing to deal with.\n";
     }
 }
 

@@ -1,3 +1,19 @@
 #!/usr/bin/perl
-print "Content-Type: text/html\n\n";
-print ("<h1>Hello Perl script</h1>");
+
+print "Content-type:text/html\r\n\r\n";
+print '<!DOCTYPE html>';
+
+print '<head>';
+print '<title>cgi perl script</title>';
+print '<link rel="icon" href="data:,">';
+print '</head>';
+print '<body>';
+print '<center>';
+print '<h1>Welcome<h1>';
+print '<h2>perl.pl script</h2>';
+print '<center>';
+print '<div>';
+print '<a href="../forms/CgiPostWithNameForm.html">try another cgi script here</a>';
+print '</div>';
+print '</body>';
+print '</html>';

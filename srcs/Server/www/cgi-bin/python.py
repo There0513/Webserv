@@ -13,8 +13,9 @@ print ("<!DOCTYPE html>")
 
 
 print ("<body class=\"stylito\">")
+print ("<link rel=\"icon\" href=\"data:,\"> ")
 print ("<center>")
-print ("<h1>Hello %s %s</h1>" % (firstName, lastName))
+print ("<h1>Coucou %s %s</h1>" % (firstName, lastName))
 print ("<center>")
 print ("</body>")
 print ("</html>")

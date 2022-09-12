@@ -6,10 +6,11 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:05:16 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/06 12:01:54 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/10 19:16:43 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+char **_envir;
 #include "./Server/testServer.hpp"
 #include "./Config/parseConfig.hpp"
 
@@ -33,8 +34,8 @@ void    printMapConfig(ConfigFile cf) {
     }
 }
 
-int main(int ac, char **av) {
-
+int main(int ac, char **av, char **env) {
+_envir = env;
     if (ac != 2) {
         std::cout << "ERROR: Wrong number of arguments\n" << std::endl;
         std::cout << "Usage: ./webserv [Config File]" << std::endl;        
@@ -42,7 +43,7 @@ int main(int ac, char **av) {
     }
     std::string path = av[1]; 
     ConfigFile  cf(path);
-    printMapConfig(cf);
+    // printMapConfig(cf);
     HDE::testServer t(cf.portsToOpen);
 
     std::cout << std::endl;

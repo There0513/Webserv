@@ -11,8 +11,11 @@ class   httpResponse
         std::string pageContent;
         std::string _contentType;
 
+		char        **_envVar;      // env var for cgi
+
     
     public:
+        char        **execArgv;     // argument for execve(execArgv[0], execArgv, environ)  tmp public
         httpRequest request;
         httpResponse();
         ~httpResponse();
@@ -30,6 +33,9 @@ class   httpResponse
         /* handle CGI */
         int         checkCgi();
         void        handleCgi();
+        int         executeCgi();
+        void        handleCgiFile();
+        void        createEnvVar();
 
         void        setContentType(std::string type);
         std::string getContentType();

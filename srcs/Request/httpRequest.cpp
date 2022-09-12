@@ -4,10 +4,6 @@
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
 _statusCode(0), _isChunked(false) {
-    std::cout << "\nhttpRequest [ " << buffer << " ] END httpRequest\n" << std::endl;
-	// requests.insert(std::make_pair(socket, "")); // init requests          ~ earlier in loop maybe?
-    // requests[socket] += std::string(buffer);    // requests map: <socket, bufferstring>
-    // parse buffer (method, url, version, headerFields, body) -> add header:
     parseRequest(buffer);
 }
 
@@ -100,50 +96,31 @@ void    httpRequest::parseHeader(std::string buffer) {
     
     if (buffer.find("\r\n") == 0)       // erase first empty line
                 buffer.erase(0, 1);
-    std::cout << "buffer: |" << buffer << "|\n";
-        
     std::string    line = buffer.substr(0, buffer.find("\r\n"));
-    // std::cout << "line: |" << line << "|\n";
 
     while (line != "")
     {
         points = line.find_first_of(":");
         key = line.substr(1, points);   // without \n
         value = line.substr(points + 1, line.length());
-        if (key != "" && value != ""){
-            std::cout << "\tkey: " << key << " val: " << value << "\n";
+        if (key != "" && value != "")
             _header.push_back(std::make_pair(key, value));
-        }
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
-        // std::cout << "\tbuffer: |" << buffer << "|\n";
         line = buffer.substr(0, buffer.find("\r\n"));
-        // std::cout << "\nline: |" << line << "|\n";
     }
     // print _header:
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
-        std::cout << "key: " << it->first << " : val: " << it->second << "\n";
-    /*
-    pos = get
-    while pos != std::string::npos  // while /n/r or /n/r is not last elem
-        line = getLine() + delete in buffer actual line;
-            if line == empty -> end of header/begin of body
-            if no 'Content-Length -> no need to parse body I think +++
-        else
-            split line with delimiter = ":" -> get key + val from line // ex:  Host localhost:8080
-            if key == host -> setHost = val
-            push into _header vector from httpRequest
-
-    */
+    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
+    //     std::cout << "key: " << it->first << " : val: " << it->second << "\n";
 }
 
 void    httpRequest::parseBody() {
     std::cout << "_body: |" << _body << "|" << std::endl;
     // if 'Content-Length' check if parseBody needed +++
-   
 }
 
 int     httpRequest::isValid() {
-    checkFirstLine(); // if -1  -> return/send error response
+    if (checkFirstLine() != 1) // if -1  -> return/send error response
+        return -1;
 
     // if POST: content-length header
     // check if method is allowed
@@ -165,13 +142,13 @@ void    httpRequest::parseRequest(std::string buffer) {
     int end = buffer.size();
 
     if (start != std::string::npos) {    // check if "/r/n/r/n" present
-        _body = buffer.substr(start, end -1);
+        _body = buffer.substr(start + 4, end -1);
 
         getFirstLine(buffer);
         start = buffer.find("\r\n");
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);
-        std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
+        // std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
         parseHeader(buffer);
         // get server informations for port/host from conf file?
         std::string *val = getHeaderValue("Transfer-Encoding");
@@ -213,6 +190,10 @@ std::string httpRequest::getUrl() {
     return _url;
 }
 
+std::string httpRequest::getBody() {
+    return _body;
+}
+
 // void   httpRequest::setContentType(std::string type) {
 //     _contentType = type;
 // }
@@ -246,4 +227,8 @@ std::string *httpRequest::getHeaderValue(std::string const &key) {
 			return (&it->second);
 	}
 	return (NULL);
+}
+
+void        httpRequest::setHeaderValue(std::string key, std::string value) {
+    _header.push_back(std::make_pair(key, value));
 }
