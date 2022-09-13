@@ -22,11 +22,14 @@ class httpRequest
     	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
 
     public:
+        bool        _auto;// tmp public
         httpRequest(std::string buffer, long socket);
         httpRequest();
         ~httpRequest();
 
+        std::string     readContent();
         std::string     readFileContent();
+        std::string     readDirectoryAutoindex();
         void            findContentType();
         void            parseRequest(std::string buffer);
         void            getFirstLine(std::string str, std::string deli);

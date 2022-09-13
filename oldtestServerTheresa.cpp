@@ -27,7 +27,7 @@ void    HDE::testServer::launch() {
                     // httpRequest request(*(clients[newSocket])->_buffer, newSocket);    // parse request-string into 'httpRequest request'
                     if (request.isValid() != -1) {// check if valid
                         // apply - location/root (here or in getfirstline()?) - alias - queries 
-                        response.setPageContent(request.readFileContent());
+                        response.setPageContent(request.readContent());
                         response.findContentType(request.getUrl());
                         // recheck valid status code
                         response.methodHandler(request.getMethod());
@@ -79,7 +79,7 @@ void    HDE::testServer::accepter() {
     // else
     //     std::cout << "not get not post not delete." << std::endl;
     // before methods or in method-function?
-    // response.setPageContent(request.readFileContent());
+    // response.setPageContent(request.readContent());
     // request.findContentType();
     // prepare response:
     // responder(response.getPageContent(), request.getContentType());

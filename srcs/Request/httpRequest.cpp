@@ -1,9 +1,12 @@
 #include "httpRequest.hpp"
 #include <fstream>
 #include <sstream> // ostringstream
+#include <dirent.h> // DIR
+#include <sys/stat.h>   // stat
+
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
-_statusCode(0), _isChunked(false) {
+_statusCode(0), _isChunked(false), _auto(false) {
     parseRequest(buffer);
 }
 
@@ -11,17 +14,31 @@ httpRequest::httpRequest(void) {}
 
 httpRequest::~httpRequest() {}
 
-//https://www.tutorialspoint.com/Read-whole-ASCII-file-into-Cplusplus-std-string
+std::string         httpRequest::readDirectoryAutoindex() {
+    const char  *path = _url.c_str();
+    std::string dirName(path);
+    DIR         *dir = opendir(path);
+
+    if (dir == NULL) {
+        std::cerr << "Error: could not open [" << path << "]" << std::endl;
+        return "";
+    }
+    if (dirName[0] != '/')
+        dirName = "/" + dirName;
+
+    std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
+    for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
+        page += "\t\t<li><a style=\"text-decoration: none;color:black;\" href=" + dirName + "/" + std::string(dirEntry->d_name)\
+                + "\><strong>" + std::string(dirEntry->d_name) + "</strong></a></li>\n";
+    page +="</ul>\n</body>\n</html>\n";
+    closedir(dir);
+    _auto = true;
+    return page;
+}
+
 std::string     httpRequest::readFileContent() {
     std::ifstream       data;
     std::ostringstream  buffer;
-
-std::cout << "\t\t\t_url: " << _url << std::endl;
-    if (_url[0] == '/' && _url.length() > 1)
-        _url = _url.substr(1, _url.length());
-    if (_url[0] == '/' && _url.length() == 1) // && autoindex on
-        _url = "index.html";
-std::cout << "\t\t\tnew _url: " << _url << std::endl;
 
     data.open(_url);
     if (!data) {
@@ -32,6 +49,34 @@ std::cout << "\t\t\tnew _url: " << _url << std::endl;
     buffer << data.rdbuf();  // reading data
     data.close();
     return buffer.str();
+}
+
+//https://www.tutorialspoint.com/Read-whole-ASCII-file-into-Cplusplus-std-string
+std::string     httpRequest::readContent() {
+    struct stat         s;
+
+    std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
+    if (_url[0] == '/' && _url.length() > 1)
+        _url = _url.substr(1, _url.length());
+    if (_url[0] == '/' && _url.length() == 1)
+        _url = "index.html";
+    if (stat(_url.c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
+    {
+        if (s.st_mode & S_IFDIR) { // + autoindex on
+            std::cerr << "it's a directory\n";
+            return readDirectoryAutoindex();
+        }
+        else if (s.st_mode & S_IFREG) {
+            std::cerr << "it's a file\n";
+            return readFileContent();
+        }
+        else
+            std::cerr << "something else\n";
+    }
+    else
+            std::cerr << "\t|favicon|error: else of if(stat(_url.c_str(),&s) == 0 )\n";
+    std::cout << "|favicon|end of readContent\n";
+    return "";
 }
 
 int     httpRequest::checkFirstLine() {
@@ -135,7 +180,8 @@ void    httpRequest::setQuery() {
         _query = _url.substr(pos + 1, _url.size());
         _url = _url.substr(0, pos);
     }
-    std::cout << "query: " << _query << "\n";
+    std::cout << "query: |" << _query << "|\n";
+    std::cout << "new _url: |" << _url << "|\n";
 }
 
 /*  chunked:

@@ -1,1 +1,11 @@
-['srcs/Server/www/cgi-bin/pythonGet.py']
+Content-type:text/html
+
+
+<!DOCTYPE html>
+<body>
+<link rel="icon" href="data:,"> 
+<center>
+<h1>Coucou</h1>
+<center>
+</body>
+</html>

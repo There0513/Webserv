@@ -27,7 +27,7 @@ std::string     httpResponse::getPageContent() {
 void    httpResponse::findContentType(std::string url) {
 	_contentType = url.substr(url.rfind(".") + 1, url.size() - url.rfind("."));
     std::cout << "_contentType: " << _contentType << std::endl;
-    if (_contentType == "html")
+    if (request._auto == true || _contentType == "html")  // autoindex
 		_contentType = "text/html";
 	else if (_contentType == "png")
 		_contentType = "image/png";
@@ -58,7 +58,7 @@ void    httpResponse::GETMethod() {
                 // if !index.html -> closedir(dirStream) -> check if autoindex + generate repsponse
             // closedir(dirStream);
         // else open file + set content:
-            setPageContent(request.readFileContent());
+            setPageContent(request.readContent());
             findContentType(request.getUrl());
 
 
@@ -81,7 +81,8 @@ void    httpResponse::POSTMethod() {
                         // handle upload - create file etc
 
         // create a file with raw data from body
-
+            setPageContent(request.readContent());
+            findContentType(request.getUrl());
 
     // handle cgi
 }

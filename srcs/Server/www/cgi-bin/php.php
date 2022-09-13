@@ -9,13 +9,13 @@ echo "<link rel=\"icon\" href=\"data:,\"> ";
 echo "<center>";
 echo "<h1>Test Post with php</h1>";
 echo "<center>";
-if(isset($_POST['last_name']))
-    echo $_POST['last_name'];
+if(isset($_POST['name']))
+    echo $_POST['name'];
 else
-    echo "<h1>no last_name given.</h1>";
+    echo "<h1>no name given.</h1>";
 
 echo "    Bonjour, ";
-echo $_POST['last_name'];
+echo $_POST['name'];
 
 echo "</body>";
 echo "</html>";
