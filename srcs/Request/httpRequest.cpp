@@ -200,7 +200,6 @@ int     httpRequest::isValid(ConfigFile & cf) {
             std::cout << "ERROR: Invalid request" << std::endl;
             _url = cf.getErrorPage(_host, "400");
         }
-        cf.getValue(_host, _url, "authorized_methods");
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
             _url = cf.getErrorPage(_host, "400");
