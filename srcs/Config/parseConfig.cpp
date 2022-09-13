@@ -177,6 +177,15 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 // DETERMINE IF THE REQUESTED METHOD IS ALLOWED 
 bool            ConfigFile::isMethodAllowed(std::string const & host, std::string const & url, std::string const & method) {
 
+// Check if methods authorizations are mentioned, else return true
+    try {
+         getValue(host, url, "authorized_methods");
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        return true;
+    }
+
+// If methods authorizations, check if the method is allowed
     std::string str = getSection(host, url, "authorized_methods");
     
     std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();

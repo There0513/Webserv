@@ -122,7 +122,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
     else {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
-       if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
+        if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
             request.handleURL(*_ConfigFile);
             // if redirection configured
                 // set redirection status code
@@ -133,7 +133,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
             response.methodHandler(request.getMethod());
             // recheck valid status code
             handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
-        }
+       }
     }
 }
 
