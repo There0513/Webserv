@@ -165,7 +165,9 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
         if (url.find(".") == std::string::npos) {
             std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
-            return (root + checkIndex(port, url, root));
+            if (url.size() == 1)
+                return (root + checkIndex(port, url, root));
+            return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
             std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));

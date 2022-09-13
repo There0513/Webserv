@@ -169,7 +169,7 @@ void    httpRequest::parseBody() {  // already set in parseRequest
 int     httpRequest::isValid(ConfigFile & cf) {
     _ConfigFile = &cf;
     // if POST: content-length header
-    try {
+    try {        
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
             std::cout << "ERROR: Invalid request" << std::endl;
             _url = cf.getErrorPage(_host, "400");
@@ -179,13 +179,22 @@ int     httpRequest::isValid(ConfigFile & cf) {
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
             _url = cf.getErrorPage(_host, "400");
         }
+        // Check if there is a cgi, and if yes, if the config file is set up for it
+        size_t ext = _url.find_last_of(".");
+        if (ext == std::string::npos)
+            return 1;
+        _extension = _url.substr(ext + 1, _url.size());
+        if (_extension == "py" || _extension == "pl" || _extension == "php") {
+            cf.getValue(_host, _url, "cgi");
+            isCgi = true;
+        }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         std::cout << rouge << e.what() << defi << std::endl;
         _url = cf.getErrorPage(_host, "404");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
-        std::cout << rouge << e.what() << " Check the URI of your request." << defi << std::endl;
+        std::cout << rouge << e.what() << ". Check the URI of your request." << defi << std::endl;
         _url = cf.getErrorPage(_host, "404");
     }
     // min/max length content --> only for POST method (?)
@@ -294,6 +303,10 @@ std::string    httpRequest::getHost() {
 
 std::string httpRequest::getBody() {
     return _body;
+}
+
+std::string httpRequest::getExtension() {
+    return _extension;
 }
 
 void    httpRequest::setMethod(std::string method) {
