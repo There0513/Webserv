@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/30 10:19:01 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/13 22:54:54 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,7 +438,15 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << red << e.what() << def << std::endl;
     }
-    return ("/index.html");
+    // check autoindex here; if on -> return "" ?:
+    try {
+        std::string autoind = getValue("localhost:8080", "/", "autoindex")[0];
+        return ""; // use autoindex in readContent/readDirectoryAutoindex
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << "no autoindex in configfile\treturn index.html\n";
+        return ("/index.html");
+    }
 }
 
 // CHECK IF THERE IS A ROOT AT LEAST IN EACH SERVER BLOCK

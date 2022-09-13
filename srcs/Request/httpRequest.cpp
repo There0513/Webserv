@@ -26,8 +26,28 @@ std::string         httpRequest::readDirectoryAutoindex() {
         std::cerr << "Error: could not open [" << path << "]" << std::endl;
         return "";
     }
+    
+    std::string root;
+    
+    try {
+        root = _ConfigFile->getValue("localhost:8080", "/", "root")[0];
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        root = "";
+    }
+    if (root == "") {
+        try {
+            root = _ConfigFile->getValue("localhost:8080", "", "root")[0];
+        }
+        catch (ConfigFile::ValueNotFoundException &e) {
+           root = "";
+        }
+    }
     if (dirName[0] != '/')
         dirName = "/" + dirName;
+    std::cout << "\tdirName: " << dirName << "\n\troot: " << root << "\n";
+    if (dirName == ("/"+root))
+        dirName = "";
 
     std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
@@ -63,9 +83,10 @@ std::string     httpRequest::readContent() {
         _url = _url.substr(1, _url.length());
     if (_url[0] == '/' && _url.length() == 1)
         _url = "index.html";
+
     if (stat(_url.c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
     {
-        if (s.st_mode & S_IFDIR) { // + autoindex on
+        if (s.st_mode & S_IFDIR) {
             std::cerr << "it's a directory\n";
             return readDirectoryAutoindex();
         }
