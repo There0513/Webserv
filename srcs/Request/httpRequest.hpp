@@ -22,6 +22,7 @@ class httpRequest
         int             _statusCode;
         bool            _isChunked;
 
+        std::string     _extension;
 
 
     public:
@@ -43,9 +44,7 @@ class httpRequest
 
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);
-
-
-
+        bool            isCgi = false;
 
 /* SETTERS - GETTERS */
 
@@ -56,6 +55,7 @@ class httpRequest
         std::string getHost();
 
         std::string getBody();
+        std::string getExtension();
 
         void        setMethod(std::string method);
         std::string getMethod();

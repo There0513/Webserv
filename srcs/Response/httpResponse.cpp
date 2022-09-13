@@ -98,7 +98,7 @@ void        httpResponse::methodHandler(std::string method) {
     // get location from config
     if (checkCgi() == 1)
         handleCgi();
-    else if (method[0] == 'G')
+    if (method[0] == 'G')
         GETMethod();
     else if (method[0] == 'P')
         POSTMethod();
@@ -115,23 +115,19 @@ int     httpResponse::checkCgi() {
     std::cout << "\t\t\tcheckCgi()\n";
     size_t  ext;
 
-    if ((ext = request.getUrl().find_last_of(".")) != std::string::npos && request.getMethod() != "DELETE"
-        // && cf.getValue(request.getHost(), request.getUrl(), cgi) != ""   // cgi in config file
-        ) {
+    if (request.isCgi == true && request.getMethod() != "DELETE") {
         // check extension:
-        std::string extension = request.getUrl().substr(ext + 1, request.getUrl().size());
-        std::cout << "\n\n\t\t\t~~~~~extension: " << extension << std::endl;
-        // check if extension is valid in configfile
+        std::cout << "\n\n\t\t\t~~~~~extension: " << request.getExtension() << std::endl;
     	execArgv = (char **)malloc(sizeof(char *) * 3);
     	*(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
     	*(execArgv + 2) = NULL;
 	        *(execArgv + 0) = (char *)strdup("py");
 
-        if (extension == "py")
+        if (request.getExtension() == "py")
 	        *(execArgv + 0) = (char *)strdup("/usr/bin/python");
-        else if (extension == "pl")
+        else if (request.getExtension() == "pl")
 	        *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
-        else if (extension == "php")
+        else if (request.getExtension() == "php")
 	        *(execArgv + 0) = (char *)strdup("/usr/bin/php");
         else
             return 0;
