@@ -48,6 +48,11 @@ std::string         httpRequest::readDirectoryAutoindex() {
     std::cout << "\tdirName: " << dirName << "\n\troot: " << root << "\n";
     if (dirName == ("/"+root))
         dirName = "";
+    size_t  pos;
+    if ((pos = dirName.find("/"+root)) != std::string::npos) {
+        dirName = dirName.substr(root.size() + 1, dirName.size());
+    }
+    std::cout << "\tdirName: " << dirName << "\n";
 
     std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
