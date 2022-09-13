@@ -1,11 +1,11 @@
 #include "testServer.hpp"
 #include "../Request/httpRequest.hpp"
 #include "../Response/httpResponse.hpp"
-#include "../Client/Client.hpp"
 #include <fcntl.h>
 
-HDE::testServer::testServer(std::vector<int> port) : SimpleServer(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, 10) {
-    
+HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
+
+    _ConfigFile = &cf;
     launch();
 }
 
@@ -122,14 +122,13 @@ void    HDE::testServer::deal_with_data(int listnum) {
     else {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
-        // if (request.getUrl() == "/favicon.ico")
-        //     return;
-        if (request.isValid() != -1) {// check if request is valid
-            request.handleURL();
+       if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
+            request.handleURL(*_ConfigFile);
             // if redirection configured
                 // set redirection status code
                 // create response (page content + content type)
             // else -> handle method-function (GET, POST, DELETE):
+            std::cout << "\t\t\t\ttest in deal_with_data \n";
             response.request = request;
             response.methodHandler(request.getMethod());
             // recheck valid status code

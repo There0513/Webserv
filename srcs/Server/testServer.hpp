@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/31 08:20:39 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/13 18:08:00 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 #include <stdio.h>
 #include "SimpleServer.hpp"
-#include "../Client/Client.hpp"
 #include "../Request/httpRequest.hpp"
+#include "../Config/parseConfig.hpp"
 
 namespace HDE {
 
@@ -32,9 +32,6 @@ namespace HDE {
             void    handleResponse(std::string content, std::string contentType, int connectListSocket);
             void    responder(std::string content, std::string contentType);
 
-            // std::map<int, Client*>  clients;
-
-
             int     connectList[10]; // array of connected sockets (clients)
             fd_set  socks; // socket fds we want to wake up for, using select()
             int     highSocket; // highest fd
@@ -45,11 +42,10 @@ namespace HDE {
             void    deal_with_data(int);
             
         public:
-            testServer(std::vector<int> port);
-            void    launch();
-
-            // tmp:
-            int     readingTmp();
+            testServer(ConfigFile cf);
+            
+            ConfigFile* _ConfigFile; // Configuration file defined in the main
+            void        launch();
     };
 }
 

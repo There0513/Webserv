@@ -3,23 +3,26 @@
 # include <iostream>
 # include <map>
 # include <vector>
+#include "../Config/parseConfig.hpp"
 
 class httpRequest
-{   // tests
+{
     private:
-        std::string _method;     // -> first line
-        std::string _url;        // -> first line
-        std::string _version;    // -> first line
+        std::string     _method;     // -> first line
+        std::string     _url;        // -> first line
+        std::string     _version;    // -> first line
 
-        std::string _query;
 	    std::vector<std::pair<std::string, std::string > >  _header;
-        std::string _body;
+        std::string     _host;      // -> host from body request
+        std::string     _query;
+        std::string     _body;
+        
+        ConfigFile*     _ConfigFile;
 
-        int         _statusCode;
-        bool        _isChunked;
+        int             _statusCode;
+        bool            _isChunked;
 
 
-    	std::map<long, std::string>                         requests; // <socket, bufferstring> // needed for loop?!?
 
     public:
         bool        _auto;// tmp public
@@ -38,9 +41,8 @@ class httpRequest
         void            parseHeader(std::string buffer);
         void            parseBody();
 
-        int             isValid();
-
-        void            handleURL();
+        int             isValid(ConfigFile & cf);
+        void            handleURL(ConfigFile & cf);
 
 
 
@@ -49,6 +51,9 @@ class httpRequest
 
         void        setUrl(std::string url);
         std::string getUrl();
+        
+        void        setHost(std::string buffer);
+        std::string getHost();
 
         std::string getBody();
 

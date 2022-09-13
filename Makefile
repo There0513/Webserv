@@ -6,7 +6,6 @@ SRCS	=	srcs/main.cpp\
 			srcs/Server/SimpleServer.cpp\
 			srcs/Server/testServer.cpp\
 			srcs/Config/parseConfig.cpp\
-			srcs/Client/Client.cpp\
 			srcs/Request/httpRequest.cpp\
 			srcs/Response/httpResponse.cpp
 

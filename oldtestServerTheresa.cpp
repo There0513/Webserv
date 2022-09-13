@@ -2,8 +2,6 @@
 #include "httpRequest.hpp"
 #include "httpResponse.hpp"
 #include "httpResponse.cpp"
-#include "Client.hpp"
-#include "Client.cpp"
 #include <fcntl.h>
 
 HDE::testServer::testServer() : SimpleServer(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10) {

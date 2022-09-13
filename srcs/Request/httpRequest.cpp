@@ -1,9 +1,12 @@
 #include "httpRequest.hpp"
 #include <fstream>
-#include <sstream> // ostringstream
-#include <dirent.h> // DIR
+#include <sstream>      // ostringstream
+#include <dirent.h>     // DIR
 #include <sys/stat.h>   // stat
+#include "../Config/colormod.hpp"
 
+Color::Modifier		rouge(Color::FG_RED);
+Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
 _statusCode(0), _isChunked(false), _auto(false) {
@@ -163,13 +166,29 @@ void    httpRequest::parseBody() {  // already set in parseRequest
     // if 'Content-Length' check if parseBody needed +++
 }
 
-int     httpRequest::isValid() {
-    if (checkFirstLine() != 1) // if -1  -> return/send error response
-        return -1;
-
+int     httpRequest::isValid(ConfigFile & cf) {
+    _ConfigFile = &cf;
     // if POST: content-length header
-    // check if method is allowed
-    // min/max length content
+    try {
+        if (checkFirstLine() == -1) { // if -1  -> return/send error response
+            std::cout << "ERROR: Invalid request" << std::endl;
+            _url = cf.getErrorPage(_host, "400");
+        }
+        cf.getValue(_host, _url, "authorized_methods");
+        if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
+            std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
+            _url = cf.getErrorPage(_host, "400");
+        }
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+        _url = cf.getErrorPage(_host, "404");
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << rouge << e.what() << " Check the URI of your request." << defi << std::endl;
+        _url = cf.getErrorPage(_host, "404");
+    }
+    // min/max length content --> only for POST method (?)
     return 1;   // all good
 }
 
@@ -221,13 +240,25 @@ void    httpRequest::parseRequest(std::string buffer) {
         the message is either truncated, or padded with nulls to the specified length.
         The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
         */
+        setHost(buffer);
         parseBody();
     }
 }
 
-void    httpRequest::handleURL() {   // find url-corresponding route
-    // if (_url.size() <= 1 && _url[0] == '\'')
-    //         _url = "index.html";
+void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
+
+    try {
+
+        if (_url.find("error") == std::string::npos)
+            _url = cf.findPath(_host, _url); // find the path to the right file inside the server
+
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << rouge << e.what() << defi << std::endl;
+    }
     // check if query '? =' in _url
     // if root in config.file -> add root:
         // std::string tmp_root = "www";                // getRoot() from config.file ==> CAPU ==> getValue(host(string), url(string), "root") See line 64 of main.cpp (use a try and catch structure)
@@ -235,7 +266,6 @@ void    httpRequest::handleURL() {   // find url-corresponding route
 
     // apply - location/root - alias - queries 
 }
-
 
 /* SETTERS - GETTERS */
 
@@ -247,17 +277,24 @@ std::string httpRequest::getUrl() {
     return _url;
 }
 
+void    httpRequest::setHost(std::string buffer) {
+    // get the Host of the request
+    int start = buffer.find_first_of(":") + 2;
+    
+    if ((start != std::string::npos)) {
+        std::string tmp = buffer.substr(start, buffer.length());
+        _host = buffer.substr(start, tmp.find('\n'));
+    }
+}
+
+std::string    httpRequest::getHost() {
+    return _host;
+}
+
+
 std::string httpRequest::getBody() {
     return _body;
 }
-
-// void   httpRequest::setContentType(std::string type) {
-//     _contentType = type;
-// }
-
-// std::string httpRequest::getContentType() {
-//     return _contentType;
-// }
 
 void    httpRequest::setMethod(std::string method) {
     _method = method;

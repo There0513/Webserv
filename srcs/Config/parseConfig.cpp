@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/08/31 12:02:28 by threiss          ###   ########.fr       */
+/*   Updated: 2022/08/30 10:19:01 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ ConfigFile::ConfigFile(std::string const & configFile) {
     
     int                     posEqual;
     int                     flag = 0;
+    _nbVirtualHosts = 0;
 
     while (std::getline(file, line)) {
 
@@ -43,8 +44,10 @@ ConfigFile::ConfigFile(std::string const & configFile) {
 
             _inSection = trim(line.substr(1, line.find(']') -1));
 
-            if (!_inSection.compare("server")) 
+            if (!_inSection.compare("server")) {
                 _inSection.assign("server" + std::to_string(++flag));
+                _nbVirtualHosts++;
+            }
 
             else if (!_inSection.compare("location/")) 
                 _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
@@ -78,6 +81,16 @@ ConfigFile::ConfigFile(std::string const & configFile) {
     getPorts(); // GET THE LISTEN PORTS IN A VECTOR
 }
 
+ConfigFile & ConfigFile::operator=(ConfigFile const & rhs) {
+
+	this->_content = rhs._content;
+	this->_directive = rhs._directive;
+	this->_valuesVec = rhs._valuesVec;
+	this->_inSection = rhs._inSection;
+	this->portsToOpen = rhs.portsToOpen;
+	return (*this);
+}
+
 // ========================================================= GETTERS AND MEMBER FUNCTIONS TO INTERACT WITH =============================================================
 
 // GET MAP
@@ -87,18 +100,19 @@ std::map<std::string, std::vector<std::string> > const & ConfigFile::getMap() co
 }
 
 // GET BLOCK NAME
-std::string ConfigFile::getSection(std::string const & port, std::string const & url, std::string const & directive) {
+std::string ConfigFile::getSection(std::string const & host, std::string url, std::string const & directive) {
 
-    std::string server = findServer(port);
+    std::string server = findServer(host);
     std::string str;
 
+    if (url.find(".") != std::string::npos)
+        url = url.substr(0, url.find_last_of("/"));
     if (!url.compare(""))
         str = server + directive; 
     else if (!url.compare("/"))
         str = server + "location" + url + directive; 
     else
         str = server + "location" + url + "/" + directive;
-
     return str;
 }
 
@@ -136,18 +150,34 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
     try {
 
-        return (getValue(port, url, "root")[0] + url);
+        std::string root = getValue(port, url, "root")[0];
+
+        if (url.find(".") == std::string::npos) //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
+            return (root + checkIndex(port, url, root));
+        else {
+            std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
+            return (root + extension); //else we are looking for a file, so append the file to the root directory if any to find the file
+        }
     }
     catch (ConfigFile::ValueNotFoundException &e) {
 
-        return (getValue(port, "", "root")[0] + url);
+        std::string root = getValue(port, "", "root")[0];
+
+        if (url.find(".") == std::string::npos) {
+            std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
+            return (root + checkIndex(port, url, root));
+        }
+        else {
+            std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
+            return (root + extension); 
+        }
     }
 }
 
 // DETERMINE IF THE REQUESTED METHOD IS ALLOWED 
-bool            ConfigFile::isMethodAllowed(std::string const & port, std::string const & url, std::string const & method) {
+bool            ConfigFile::isMethodAllowed(std::string const & host, std::string const & url, std::string const & method) {
 
-    std::string str = getSection(port, url, "authorized_methods");
+    std::string str = getSection(host, url, "authorized_methods");
     
     std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
 
@@ -156,6 +186,24 @@ bool            ConfigFile::isMethodAllowed(std::string const & port, std::strin
             && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
             return true;
     return false;
+}
+
+std::string     ConfigFile::getErrorPage(std::string const & host, std::string const & error) {
+
+    try {
+
+        std::vector<std::string> errorPage = getValue(host, "", "error_page");
+        std::vector<std::string>::reverse_iterator rit = std::find(errorPage.rbegin(), errorPage.rend(), error);
+        if (rit != errorPage.rend())
+            return ("srcs/Server/www/errorPages" + *rit);
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    return ("srcs/Server/www/errorPages/404notfound.html");
 }
 
 // ================================== FIND THE RIGHT SERVER TO SERVE THE REQUEST ======================================
@@ -167,12 +215,13 @@ std::string     ConfigFile::findServer(std::string const & host) {
     std::map<std::string, std::vector<std::string> >::iterator it = _content.begin();
     std::vector<std::string>    candidateServers;
 
-    //  DETERMINE CANDIDATE SERVERS
+    //  DETERMINE CANDIDATE SERVERS (SAME PORT, LOCAL IP)
     it  = _content.begin();
     for (; it != _content.end(); it++) {
 
-        if (isLocalIP(it->second[0], host) == true)
-            candidateServers.push_back(it->first.substr(0, it->first.find("/") + 1));
+        if (it->first.find("listen") != std::string::npos 
+            && isLocalIP(it->second[0], host) == true)
+                candidateServers.push_back(it->first.substr(0, it->first.find("/") + 1));
     }
 
     //  RETURN SERVER IF THERE IS ONLY ONE CANDIDATE 
@@ -211,15 +260,17 @@ bool    ConfigFile::isLocalIP(std::string const & listen, std::string const & ho
     int portPos = listen.find(":") + 1;
     int portPosHost = host.find(":") + 1;
     std::string hostPort = host.substr(portPosHost, hostlen - portPosHost);
+    hostPort = hostPort.substr(0, hostPort.find_first_not_of("0123456789"));
+    std::string listenPort = listen.substr(portPos, lislen - portPos);
 
     if (!listen.compare(host)) {
 
         specificIP++;
         return true;
     }
-    else if (!listen.compare(portPos, lislen - portPos, hostPort)
-            && specificIP == 0) 
-        return true;
+    else if (!listenPort.compare(hostPort)
+            && specificIP == 0)
+                return true;
     return false;
 }
 
@@ -290,6 +341,7 @@ void     ConfigFile::checkErrorConfig(void) {
         // CHECK NB OF VALUES IN DIRECTIVES
         if (it->second.empty() || (it->second.size() > 1 
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "authorized_methods"
+            && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "index"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "server_name"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "error_page"
             && it->first.substr(it->first.find_last_of("/") + 1, it->first.length()) != "cgi")
@@ -331,16 +383,21 @@ void     ConfigFile::checkErrorConfig(void) {
             }
         }
 
-        // CHECK PAGES EXTENSION
-        if (it->first.find("error_page") != std::string::npos) {
+        // // CHECK PAGES EXTENSION
+        // if (it->first.find("error_page") != std::string::npos) {
 
-            if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
-            || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
+        //     if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
+        //     || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
 
-                std::cout << red << "Config File Error: [" << it->first << "] is not an acceptable extension" << def << std::endl;
-                exit(0);
-            }
-        }
+        //         std::cout << red << "Config File Error: [" << it->second << "] is not an acceptable extension" << def << std::endl;
+        //         exit(0);
+        //     }
+        // }
+    }
+    // Check that all the mandatory directives are present in each server block
+    if (checkRoot() == 0) {
+        std::cout << red << "Config File Error: mandatory directives not present in all virtual hosts" << def << std::endl;
+        exit(0);
     }
     // NO CONFIGURATION ISSUE
     std::cout << green << "Config File: ready to be used" << def << std::endl;
@@ -358,6 +415,60 @@ bool    ConfigFile::checkDirective(std::string dir) {
     if (std::find(listOfDir.begin(), listOfDir.end(), dir) != listOfDir.end())
         return true;
     return false;
+}
+
+// CHECK WHICH INDEX TO PICK FROM THE INDEX DIRECTIVE
+std::string ConfigFile::checkIndex(std::string const & host, std::string const & url, std::string const & root) {
+    
+    std::vector<std::string>            indexList;
+    std::vector<std::string>::iterator  it;
+    std::ifstream                       data;
+
+    try {
+        indexList = getValue(host, url, "index");
+        for (it = indexList.begin(); it != indexList.end(); it++) {
+            data.open(root + "/" + *it);
+            if (data) 
+                return ("/" + *it);
+        }
+    }
+    catch (ConfigFile::ServerNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        std::cout << red << e.what() << def << std::endl;
+    }
+    return ("/index.html");
+}
+
+// CHECK IF THERE IS A ROOT AT LEAST IN EACH SERVER BLOCK
+bool    ConfigFile::checkRoot() {
+    
+    std::map<std::string, std::vector<std::string> >::iterator  it = _content.begin();
+    int nbListen = 0;
+    int nbRoot = 0;
+
+    for (; it != _content.end(); it++) {
+        
+        if (it->first.find ("listen") != std::string::npos) {
+            
+            std::string prefix = it->first.substr(0, it->first.find("listen"));
+            if (std::count(prefix.begin(), prefix.end(), '/') < 2)
+                nbListen++;
+        }
+    }
+    for (it = _content.begin(); it != _content.end(); it++) {
+            
+        if (it->first.find ("root") != std::string::npos) {
+            
+            std::string prefix = it->first.substr(0, it->first.find("root"));
+            if (std::count(prefix.begin(), prefix.end(), '/') < 2)
+                nbRoot++;
+        }
+    }
+    if (nbListen >= _nbVirtualHosts && nbRoot >= _nbVirtualHosts)
+        return 1;
+    return 0;
 }
 
 // ===================================================== UTILS ===========================================================

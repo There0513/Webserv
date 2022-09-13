@@ -11,7 +11,7 @@ class   httpResponse
         std::string pageContent;
         std::string _contentType;
 
-		char        **_envVar;      // env var for cgi
+		char        **_envVar;      // env var for cgi execve
 
     
     public:

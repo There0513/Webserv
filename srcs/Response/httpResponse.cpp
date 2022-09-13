@@ -11,8 +11,7 @@
 #include <sstream>      // std::stringstream
 
 
-httpResponse::httpResponse() {
-}
+httpResponse::httpResponse() {}
 
 httpResponse::~httpResponse() {}
 
@@ -107,7 +106,6 @@ void        httpResponse::methodHandler(std::string method) {
         DELETEMethod();
     else
         std::cout << "not get not post not delete." << std::endl;
-    std::cerr << "\t\t\t\t\t\t\t\tend of method handler\n";
 }
 
 

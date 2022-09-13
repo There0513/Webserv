@@ -33,8 +33,9 @@ class ConfigFile {
         std::string                                         _directive; // A string containing the directive
         std::vector<std::string>                            _valuesVec; // A vector containing the possible values
         std::string                                         _inSection; // A string containing the section 
+        int                                                 _nbVirtualHosts; // The nb of server blocks
 
-        std::string     getSection(std::string const & port, std::string const & url, std::string const & directive); // A function that returns the Section path where the value is
+        std::string     getSection(std::string const & host, std::string url, std::string const & directive); // A function that returns the Section path where the value is
         std::string     findServer(std::string const & host); // A function to find the first server with the port corresponding to the request
 
         std::string     defineHost(std::string str);
@@ -44,19 +45,23 @@ class ConfigFile {
 
         bool            checkDirective(std::string); // A function to check errors in directives
         void            checkErrorConfig(void); // A function to check errors in the config file 
+        std::string     checkIndex(std::string const & host, std::string const & url, std::string const & root); // A function to check which index to pick from the INDEX directive
+        bool            checkRoot(void); // A function to check if listen and root directives are present in each virtual host
 
         //parsing utils
         std::string                 trim(std::string const & source, char const *delims = "\t\r\n");
         std::vector<std::string>    fillVector(std::string const & value);
 
     public:
-            //Constructor
+            //Constructors
             ConfigFile(std::string const & configFile);
-
+         	ConfigFile & operator=(ConfigFile const & rhs);
+           
             //Getters
             std::map<std::string, std::vector<std::string> > const & getMap() const;
             std::vector<std::string> const &                         getValue(std::string const & host, std::string const & url, std::string const & directive);
             void                                                     getPorts();
+            std::string                                              getErrorPage(std::string const & host, std::string const & error);
 
             //Useful member functions 
             std::string     findPath(std::string const & host, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root
@@ -84,4 +89,3 @@ class ConfigFile {
 };
 
 #endif
-
