@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/14 01:19:05 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/14 19:40:14 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,10 +152,13 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
         std::string root = getValue(port, url, "root")[0];
 
-        if (url.find(".") == std::string::npos) //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
+        if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
             return (root + checkIndex(port, url, root));
+    }
         else {
             std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
             return (root + extension); //else we are looking for a file, so append the file to the root directory if any to find the file
         }
     }
@@ -167,11 +170,18 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
             std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
+            if (url[0] == '/')  // without double '//' in new url
+                return (root + url + checkIndex(port, url, root));
             return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
-            std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
-            return (root + extension); 
+            // std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));     // muted (theresa)
+            // return (root + extension);                                                                           // muted (theresa)
+
+            // muted because for example url = http://localhost:8080/uploads/index.html was sent to srcs/Server/www/index.html instead of srcs/Server/www/uploads/index.html
+            
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
+            return (root + url); 
         }
     }
 }

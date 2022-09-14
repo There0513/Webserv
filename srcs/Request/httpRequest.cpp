@@ -52,6 +52,8 @@ std::string         httpRequest::readDirectoryAutoindex() {
     if ((pos = dirName.find("/"+root)) != std::string::npos) {
         dirName = dirName.substr(root.size() + 1, dirName.size());
     }
+    if (dirName[0] == '/' && dirName[1] == '/')
+        dirName = dirName.substr(1, dirName.size());    // delete seccond '/' in dirName: //uploads
     std::cout << "\tdirName: " << dirName << "\n";
 
     std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
@@ -281,7 +283,7 @@ void    httpRequest::parseRequest(std::string buffer) {
 }
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
-
+std::cout << "_url beginning of handleURL: " << _url << "\n";
     try {
 
         if (_url.find("error") == std::string::npos)
@@ -300,6 +302,8 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
         // _url = tmp_root + "/" + _url;
 
     // apply - location/root - alias - queries 
+std::cout << "_url end of handleURL: " << _url << "\n";
+
 }
 
 /* SETTERS - GETTERS */
