@@ -220,7 +220,8 @@ int     httpRequest::isValid(ConfigFile & cf) {
     }
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << rouge << e.what() << ". Check the URI of your request." << defi << std::endl;
-        _url = cf.getErrorPage(_host, "404");
+        // _url = cf.getErrorPage(_host, "404");            // tmp muted to test cgi (theresa)
+        isCgi = false;                                      // tmp added to make cgi work without error page (theresa)
     }
     // min/max length content --> only for POST method (?)
     return 1;   // all good
