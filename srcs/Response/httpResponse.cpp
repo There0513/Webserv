@@ -115,7 +115,7 @@ int     httpResponse::checkCgi() {
     std::cout << "\t\t\tcheckCgi()\n";
     size_t  ext;
 
-    if (/*request.isCgi == true && */request.getMethod() != "DELETE") {     // tmp muted to test cgi (theresa)
+    if (request.isCgi == true && request.getMethod() != "DELETE") {     // tmp (== true) muted to test cgi (theresa)
         // check extension:
         std::cout << "\n\n\t\t\t~~~~~extension: " << request.getExtension() << std::endl;
     	execArgv = (char **)malloc(sizeof(char *) * 3);
