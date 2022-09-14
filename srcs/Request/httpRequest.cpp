@@ -48,6 +48,11 @@ std::string         httpRequest::readDirectoryAutoindex() {
     std::cout << "\tdirName: " << dirName << "\n\troot: " << root << "\n";
     if (dirName == ("/"+root))
         dirName = "";
+    size_t  pos;
+    if ((pos = dirName.find("/"+root)) != std::string::npos) {
+        dirName = dirName.substr(root.size() + 1, dirName.size());
+    }
+    std::cout << "\tdirName: " << dirName << "\n";
 
     std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
@@ -195,7 +200,6 @@ int     httpRequest::isValid(ConfigFile & cf) {
             std::cout << "ERROR: Invalid request" << std::endl;
             _url = cf.getErrorPage(_host, "400");
         }
-        cf.getValue(_host, _url, "authorized_methods");
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
             _url = cf.getErrorPage(_host, "400");
@@ -216,7 +220,8 @@ int     httpRequest::isValid(ConfigFile & cf) {
     }
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << rouge << e.what() << ". Check the URI of your request." << defi << std::endl;
-        _url = cf.getErrorPage(_host, "404");
+        _url = cf.getErrorPage(_host, "404");            // tmp muted to test cgi (theresa)
+        // isCgi = false;                                      // tmp added to make cgi work without error page (theresa)
     }
     // min/max length content --> only for POST method (?)
     return 1;   // all good

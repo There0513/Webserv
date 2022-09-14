@@ -98,7 +98,7 @@ void        httpResponse::methodHandler(std::string method) {
     // get location from config
     if (checkCgi() == 1)
         handleCgi();
-    if (method[0] == 'G')
+    else if (method[0] == 'G')
         GETMethod();
     else if (method[0] == 'P')
         POSTMethod();
@@ -115,7 +115,7 @@ int     httpResponse::checkCgi() {
     std::cout << "\t\t\tcheckCgi()\n";
     size_t  ext;
 
-    if (request.isCgi == true && request.getMethod() != "DELETE") {
+    if (request.isCgi == true && request.getMethod() != "DELETE") {     // tmp (== true) muted to test cgi (theresa)
         // check extension:
         std::cout << "\n\n\t\t\t~~~~~extension: " << request.getExtension() << std::endl;
     	execArgv = (char **)malloc(sizeof(char *) * 3);
