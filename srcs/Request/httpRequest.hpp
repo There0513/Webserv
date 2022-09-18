@@ -45,7 +45,7 @@ class httpRequest
         int             checkFirstLine();
         void            setQuery();
         void            parseHeader(std::string buffer);
-        void            parseBody();
+        void            parseBody(std::string *contentLength);
 
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);

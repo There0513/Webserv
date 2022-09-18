@@ -27,30 +27,48 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
     int end = buffer.size();
 
     if (start != std::string::npos) {    // check if "/r/n/r/n" present
+
         _body = buffer.substr(start + 4, end -1);
 
         getFirstLine(buffer, " ");
+        
         setQuery();
+        
         start = buffer.find("\r\n");
+        
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);
+
         // std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
+        
         parseHeader(buffer);        
+        
         std::string *val = getHeaderValue("Transfer-Encoding");
+        std::string *contentLength = getHeaderValue("Content-Length");
+
         if (val) {
+
             if (val->find("chunked") != std::string::npos)
                 buffer = decodeChunks(socket); // -> first line is hexadecimal value that tells the extraction length of the second line
         }
-        // else if (getHeaderValue("Content-Length")) {
-        // }
+
+        else if (contentLength) {
+            
+            if ((_method == "GET" || _method == "DELETE") && contentLength->compare("0") != 0)
+                std::cout << rouge << "ERROR: CONTENT LENGTH SHOULD BE 0" << defi << std::endl;
+
+            else if (_method == "POST")
+                parseBody(contentLength);
+        }
+
         /*
         The Content-Length is optional in an HTTP request. For a GET or DELETE the length must be zero.
         For POST, if Content-Length is specified and it does not match the length of the message-line,
         the message is either truncated, or padded with nulls to the specified length.
         The Content-Length is always returned in the HTTP response even when there is no content, in which case the value is zero.
         */
+
         setHost(buffer);
-        parseBody();
     }
 }
 
@@ -62,6 +80,7 @@ void    httpRequest::parseHeader(std::string buffer) {
     
     if (buffer.find("\r\n") == 0)       // erase first empty line
                 buffer.erase(0, 1);
+    
     std::string    line = buffer.substr(0, buffer.find("\r\n"));
 
     while (line != "")
@@ -74,15 +93,16 @@ void    httpRequest::parseHeader(std::string buffer) {
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
         line = buffer.substr(0, buffer.find("\r\n"));
     }
-    // print _header:
-    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
-    //     std::cout << "key: " << it->first << " : val: " << it->second << "\n";
 }
 
-void    httpRequest::parseBody() {  // already set in parseRequest
+void    httpRequest::parseBody(std::string *contentLength) {  // already set in parseRequest
+    
     std::cout << "_body: |" << _body << "|" << std::endl;
 
-    // if 'Content-Length' check if parseBody needed +++
+    int len = stoi(*contentLength);
+
+    if (_body.length() != len) // if 'Content-Length' != body length, fill with NULLS or truncate to len
+        _body.resize(len, '\0'); 
 }
 
 void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
@@ -106,48 +126,57 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
 }
 
 int     httpRequest::checkFirstLine() {
-// check method:
+
+    // check method:
     if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
         std::cerr << "Error: method not valid." << std::endl;
         // change status code + return -1
         return -1;
     }
-// check url:
+    
+    // check url:
     std::cout << "_url[0] = " << _url[0] << "|\n";
     if (_url[0] != '/' || _url.length() == 0) {
         _statusCode = 400; // bad request
         return -1;
     }
+    
     if (_url.length() >= 256) {
         _statusCode = 414;
         return -1;
     }
 
-// check http version:
+    // check http version:
     if (_version.compare(0, 6, "HTTP/1") != 0) {
         std::cerr << "Error: HTTP Version not valid." << std::endl;
         _statusCode = 505;  // "HTTP Version not supported"
         return -1;
     }
+    
     // check if numbers after 'HTTP/1':
     if (_version.substr(7, _version.length()).find_first_not_of("0123456789") != std::string::npos) {
         std::cerr << "Error: HTTP Version not valid." << std::endl;
         _statusCode = 505;  // "HTTP Version not supported"
         return -1;
     }
+
     std::cout << "\t\t\t\tcheckFirstLine OK\n";
+    
     return 1;
 }
 
 void    httpRequest::setQuery() {
+
     size_t  pos;
 
     if ((pos = _url.find_first_of('?')) != std::string::npos){
         _query = _url.substr(pos + 1, _url.size());
         _url = _url.substr(0, pos);
     }
+
     std::cout << "query: |" << _query << "|\n";
+
     std::cout << "new _url: |" << _url << "|\n";
 }
 
@@ -172,6 +201,7 @@ std::string         httpRequest::readDirectoryAutoindex() {
     catch (ConfigFile::ValueNotFoundException &e) {
         root = "";
     }
+    
     if (root == "") {
         try {
             root = _ConfigFile->getValue("localhost:8080", "", "root")[0];
@@ -180,26 +210,38 @@ std::string         httpRequest::readDirectoryAutoindex() {
            root = "";
         }
     }
+    
     if (dirName[0] != '/')
         dirName = "/" + dirName;
+    
     std::cout << "\tdirName: " << dirName << "\n\troot: " << root << "\n";
+    
     if (dirName == ("/"+root))
         dirName = "";
+    
     size_t  pos;
+    
     if ((pos = dirName.find("/"+root)) != std::string::npos) {
         dirName = dirName.substr(root.size() + 1, dirName.size());
     }
+    
     if (dirName[0] == '/' && dirName[1] == '/')
         dirName = dirName.substr(1, dirName.size());    // delete seccond '/' in dirName: //uploads
+    
     std::cout << "\tdirName: " << dirName << "\n";
 
     std::string page ="<!DOCTYPE html>\n<html>\n<head>\n<title>" + dirName + "</title>\n</head>\n<body>\n<ul><h1>" + dirName + "</h1";
+    
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
         page += "\t\t<li><a style=\"text-decoration: none;color:black;\" href=" + dirName + "/" + std::string(dirEntry->d_name)\
                 + "\><strong>" + std::string(dirEntry->d_name) + "</strong></a></li>\n";
+    
     page +="</ul>\n</body>\n</html>\n";
+    
     closedir(dir);
+    
     _auto = true;
+    
     return page;
 }
 
@@ -209,13 +251,17 @@ std::string     httpRequest::readFileContent() {
     std::ostringstream  buffer;
 
     data.open(_url);
+    
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
         _url = "srcs/Server/www/errorPages/404notfound.html";
         data.open(_url);
     }
+    
     buffer << data.rdbuf();  // reading data
+    
     data.close();
+    
     return buffer.str();
 }
 
@@ -225,8 +271,10 @@ std::string     httpRequest::readContent() {
     struct stat         s;
 
     std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
+
     if (_url[0] == '/' && _url.length() > 1)
         _url = _url.substr(1, _url.length());
+    
     if (_url[0] == '/' && _url.length() == 1)
         _url = "index.html";
 
@@ -236,16 +284,20 @@ std::string     httpRequest::readContent() {
             std::cerr << "it's a directory\n";
             return readDirectoryAutoindex();
         }
+    
         else if (s.st_mode & S_IFREG) {
             std::cerr << "it's a file\n";
             return readFileContent();
         }
+    
         else
             std::cerr << "something else\n";
     }
+    
     else
             std::cerr << "\t|favicon|error: else of if(stat(_url.c_str(),&s) == 0 )\n";
     std::cout << "|favicon|end of readContent\n";
+    
     return "";
 }
 
@@ -303,7 +355,6 @@ std::string httpRequest::read_line( long socket, bool incl_endl = true ) {
         }
  
         line += c;
- 
     }
  
     return line;
