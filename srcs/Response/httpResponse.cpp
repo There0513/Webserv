@@ -46,9 +46,6 @@ void    httpResponse::findContentType(std::string url) {
             /* handle methods */
 void    httpResponse::GETMethod() {
     std::cout << "\tGET method:\n";
-    // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
-    // if !cgi:
-
         // find resource    handle path (location, root, ...)
         // check if file exists with stat()
         // if path == directory
@@ -59,16 +56,11 @@ void    httpResponse::GETMethod() {
         // else open file + set content:
             setPageContent(request.readContent());
             findContentType(request.getUrl());
-
-
-    // handle cgi
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    httpResponse::POSTMethod() {
     std::cout << "\tPOSTmethod:\n";
-    // check for cgi        ◦ Execute CGI based on certain file extension (for example .php).
-    // if !cgi:
         // check for upload file
             // if !
                 // error -> post req not accepted
@@ -82,20 +74,38 @@ void    httpResponse::POSTMethod() {
         // create a file with raw data from body
             setPageContent(request.readContent());
             findContentType(request.getUrl());
-
-    // handle cgi
 }
 
 // The DELETE method deletes the specified resource.
 void    httpResponse::DELETEMethod() {
     std::cout << "\tDELETE method:\n";
-    // handle path
-    // remove path data
+    // check if file:
+    struct stat s;
+	if (stat(request.getUrl().c_str(), &s) == 0 )
+	{
+		if (s.st_mode & S_IFREG) {   // file
+            if (remove(request.getUrl().c_str()) != 0)
+                request.setStatusCode(403);
+        }
+		else if (s.st_mode & S_IFDIR)    // directory
+            request.setStatusCode(404);
+		else
+            request.setStatusCode(404);
+	}
+	else
+            request.setStatusCode(403);
     // create response  or error handling if remove didn't work
+    if (request.getStatusCode() < 400)
+        request.setUrl("/srcs/Server/www/DeletOK.html");
+    else
+        // _url = cf.getErrorPage(_host, "404");
+        // ConfigFile * cf = request.getConfigFile();
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), std::to_string(request.getStatusCode())));
+    setPageContent(request.readContent());
+    findContentType(request.getUrl());
 }
 
 void        httpResponse::methodHandler(std::string method) {
-    // get location from config
     if (checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')

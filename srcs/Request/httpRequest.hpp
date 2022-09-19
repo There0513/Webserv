@@ -65,6 +65,9 @@ class httpRequest
 
         std::string *getHeaderValue(std::string const &key);
         void        setHeaderValue(std::string key, std::string value);
+
+        ConfigFile* getConfigFile();
+        
 };
 
 #endif

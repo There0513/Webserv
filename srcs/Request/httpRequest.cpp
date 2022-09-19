@@ -10,6 +10,7 @@ Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""),
 _statusCode(0), _isChunked(false), _auto(false) {
+    std::cout << "buffer in constructor request: |" << buffer << "|\n";
     parseRequest(buffer);
 }
 
@@ -114,7 +115,7 @@ int     httpRequest::checkFirstLine() {
 // check method:
     if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
-        std::cerr << "Error: method not valid." << std::endl;
+        std::cerr << "Error: method not valid./*\t Method: " << _method << "\n*/" << std::endl;
         // change status code + return -1
         return -1;
     }
@@ -197,20 +198,25 @@ void    httpRequest::parseBody() {  // already set in parseRequest
 int     httpRequest::isValid(ConfigFile & cf) {
     _ConfigFile = &cf;
     // if POST: content-length header
-    try {        
+    try {
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
             std::cout << "ERROR: Invalid request" << std::endl;
             _url = cf.getErrorPage(_host, "400");
         }
+        // std::cout << "\t\t1\tfind catch in isValid!!!!!!!!!!!!!\n";
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
             _url = cf.getErrorPage(_host, "400");
         }
+        // std::cout << "\t\t2\tfind catch in isValid!!!!!!!!!!!!!\n";
+
         // Check if there is a cgi, and if yes, if the config file is set up for it
         size_t ext = _url.find_last_of(".");
         if (ext == std::string::npos)
             return 1;
         _extension = _url.substr(ext + 1, _url.size());
+        // std::cout << "\t\t3\tfind catch in isValid!!!!!!!!!!!!!\n";
+
         if (_extension == "py" || _extension == "pl" || _extension == "php") {
             cf.getValue(_host, _url, "cgi");
             isCgi = true;
@@ -280,6 +286,9 @@ void    httpRequest::parseRequest(std::string buffer) {
         setHost(buffer);
         parseBody();
     }
+    else {  // chunked? wait for rnrn
+        std::cout << "no rnrn present\n";
+    }
 }
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
@@ -324,6 +333,7 @@ void    httpRequest::setHost(std::string buffer) {
         std::string tmp = buffer.substr(start, buffer.length());
         _host = buffer.substr(start, tmp.find('\n'));
     }
+    // _host = getHeaderValue("host");
 }
 
 std::string    httpRequest::getHost() {
@@ -368,4 +378,8 @@ std::string *httpRequest::getHeaderValue(std::string const &key) {
 
 void        httpRequest::setHeaderValue(std::string key, std::string value) {
     _header.push_back(std::make_pair(key, value));
+}
+
+ConfigFile* httpRequest::getConfigFile() {
+    return _ConfigFile;
 }

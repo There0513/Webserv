@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/14 19:40:14 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/19 10:55:28 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ void    ConfigFile::getPorts() {
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
     try {
-
+    std::cout << "\t\tfindpath\tport: " << port << "\turl: " << url << "\n\n\n";
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
@@ -188,7 +188,7 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
 // DETERMINE IF THE REQUESTED METHOD IS ALLOWED 
 bool            ConfigFile::isMethodAllowed(std::string const & host, std::string const & url, std::string const & method) {
-
+    std::cout << "\tisMethodAllowed:\n\t\thost: " << host << "\n\t\turl: " << url << "\n\t\tmethod: " << method << "\n";
 // Check if methods authorizations are mentioned, else return true
     try {
          getValue(host, url, "authorized_methods");

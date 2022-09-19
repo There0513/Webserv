@@ -121,7 +121,22 @@ void    HDE::testServer::deal_with_data(int listnum) {
     }
     else {
         buffer[_ret] = '\0';
+        // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
+        //             Host: localhost:8080\n \
+        //             User-Agent: custom-client\n \
+        //             Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
+        //             Connection: Keep-Alive\n \
+        //             \r\n\r\n";
+//         std::string buf = "POST /forms HTTP/1.1\r\n \
+// Host: localhost:8080 \
+// User-Agent: custom-client \
+// Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
+// Connection: Keep-Alive \
+// Content-length: 17 \
+// Content-type: text/html\n \
+// \r\n\r\n";
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
+        // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
         if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
             request.handleURL(*_ConfigFile);    // (theresa) mute to test cgi
             // if redirection configured
@@ -138,7 +153,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
 }
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
-    std::string answer = "HTTP/1.1 200 OK\nContent-Type: ";
+    std::string answer = "HTTP/1.1 200test OK\nContent-Type: "; // To do: replace version + status code
     // add statusCode + statusCode-description
     answer+= contentType;
     answer+= "; charset=UTF-8\nContent-Length:";
