@@ -20,10 +20,15 @@ class httpRequest
         ConfigFile*     _ConfigFile;
 
         int             _statusCode;
-        bool            _isChunked;
 
         std::string     _extension;
 
+        std::vector<std::string>     chunksSplit( const std::string &str, const std::string &delimiter );
+        unsigned int                 hextodec( const std::string &hex );
+        unsigned int                 read_chunk_size( long socket );
+        std::string                  read_line(long socket, bool incl_endl);
+        std::string                  read_data(long socket, int size);
+        std::string                  decodeChunks(long socket);
 
     public:
         bool        _auto;// tmp public
@@ -35,12 +40,12 @@ class httpRequest
         std::string     readFileContent();
         std::string     readDirectoryAutoindex();
         void            findContentType();
-        void            parseRequest(std::string buffer);
+        void            parseRequest(std::string buffer, long socket);
         void            getFirstLine(std::string str, std::string deli);
         int             checkFirstLine();
         void            setQuery();
         void            parseHeader(std::string buffer);
-        void            parseBody();
+        void            parseBody(std::string *contentLength);
 
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);
