@@ -437,19 +437,22 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
     // if POST: content-length header
 
-    try {        
+    try {   
+
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
          
             std::cout << "ERROR: Invalid request" << std::endl;
          
             _url = cf.getErrorPage(_host, "400");
         }
+
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
         
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
         
             _url = cf.getErrorPage(_host, "400");
         }
+
         // Check if there is a cgi, and if yes, if the config file is set up for it
         size_t ext = _url.find_last_of(".");
         
@@ -486,12 +489,16 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
-std::cout << "_url beginning of handleURL: " << _url << "\n";
+    std::cout << "_url beginning of handleURL: " << _url << "\n";
+    
     try {
 
-        if (_url.find("error") == std::string::npos)
+        if (_url.find("error") == std::string::npos) {
+         
+            _url = cf.checkRedirection(_host, _url); // check if there is a redirection
+         
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
-
+        }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         
@@ -501,7 +508,8 @@ std::cout << "_url beginning of handleURL: " << _url << "\n";
         
         std::cout << rouge << e.what() << defi << std::endl;
     }
-std::cout << "_url end of handleURL: " << _url << "\n";
+
+    std::cout << "_url end of handleURL: " << _url << "\n";
 }
 
 /* ======================================= SETTERS - GETTERS ===========================================================*/

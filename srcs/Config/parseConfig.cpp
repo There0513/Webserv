@@ -193,6 +193,7 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
          getValue(host, url, "authorized_methods");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
+        
         return true;
     }
 
@@ -206,6 +207,25 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
             && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
             return true;
     return false;
+}
+
+std::string     ConfigFile::checkRedirection(std::string const & host, std::string const & url) {
+
+    try {
+
+        std::string redirection = getValue(host, url, "redirection")[0];
+        if (redirection.find("301") == std::string::npos) {
+
+            std::cout << "ERROR: Redirection status code can only be 301" << std::endl;
+            return url;
+        }
+        std::string updated_url = redirection.substr(redirection.find_first_of(":") + 1, redirection.size());
+        return updated_url;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+
+        return url;
+    }
 }
 
 std::string     ConfigFile::getErrorPage(std::string const & host, std::string const & error) {

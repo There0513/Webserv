@@ -123,7 +123,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
         buffer[_ret] = '\0';
         httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
         if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
-            request.handleURL(*_ConfigFile);    // (theresa) mute to test cgi
+            request.handleURL(*_ConfigFile);
             // if redirection configured
                 // set redirection status code
                 // create response (page content + content type)
