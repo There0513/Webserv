@@ -1,4 +1,5 @@
 #include <map>
+#include <string>
 
 void    MimeTypeInit() {
     std::map<std::string, std::string>  MimeTypes;

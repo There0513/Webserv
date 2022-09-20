@@ -72,8 +72,20 @@ void    httpResponse::POSTMethod() {
                         // handle upload - create file etc
 
         // create a file with raw data from body
-            setPageContent(request.readContent());
-            findContentType(request.getUrl());
+        // std::cout << "request.getBody(): [" << request.getBody() << "]";
+        std::string pathwithnewfile("/mnt/nfs/homes/threiss/ourWebserv/srcs/Server/www/uploads/newfile");
+        std::ofstream monFlux(pathwithnewfile.c_str());
+
+        if(monFlux)
+        {
+            // std::cout << "file created\n";
+            monFlux << request.getBody();
+            // request.setUrl("uploads/uploadOK.html");
+
+        }
+        // std::cout << "in post check url after upload: " << request.getUrl() << std::endl;
+        setPageContent(request.readContent());
+        findContentType(request.getUrl());
 }
 
 // The DELETE method deletes the specified resource.

@@ -5,6 +5,7 @@
 
 HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
 
+    _checkUpload = false;
     _ConfigFile = &cf;
     launch();
 }
@@ -16,13 +17,13 @@ void    HDE::testServer::launch() {
 
     while (true)
     {
-        std::cout << "====== Waiting for the connection =====" << std::endl;
+        // std::cout << "====== Waiting for the connection =====" << std::endl;
 
         accepter();
         handler();
         responder();
         //     ... do not time out
-        std::cout << "=============== Done ==================" << std::endl;
+        // std::cout << "=============== Done ==================" << std::endl;
     }
 }
 
@@ -114,7 +115,7 @@ void    HDE::testServer::responder() {
 void    HDE::testServer::deal_with_data(int listnum) {
     httpResponse        response;
 
-    std::cout << "\tdeal_with_data  listnum: " << listnum << "\n\n";
+    // std::cout << "\tdeal_with_data  listnum: " << listnum << "\n\n";
     if ((_ret = read(connectList[listnum], buffer, 30000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
@@ -134,13 +135,15 @@ void    HDE::testServer::deal_with_data(int listnum) {
 
         // before parsing request:      need to check if end of request received rnrn
         std::string reqString(_requestVec.begin(), _requestVec.end());
-        std::cout << "\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~reqString:|" << reqString << "|\n";
+        // std::cout << "\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~reqString:|" << reqString << "|\n";
         // 'if' needs to be muted for tests without telnet, but unmuted for tests with telnet (need to find a solution!):
-        if (reqString.find("\n\r\n\r\n") == std::string::npos) {    // \n at beginning added for \n of last req.line
-            std::cout << "\t\tNOT found \tif (reqString.find(\"rnrn\") == std::string::npos)\n";
+        // std::cout << "_checkupload = " << _checkUpload << ".\n";
+        if (reqString.find("\r\n\r\n") == std::string::npos || (reqString.find("---") != std::string::npos && _checkUpload == false)) {    // \n at beginning added for \n of last req.line?! | "\r\n\r\n" working for telnet (just once) + browser
+            _checkUpload = true;
+            // std::cout << "\t\tWAIT NOT found \tif (reqString.find(\"rnrn\") == std::string::npos)\n";
         }
         else {
-            std::cout << "\t\tfound \tELSE of if (reqString.find(\"rnrn\") == std::string::npos)\n";
+            // std::cout << "\t\tfound \tELSE of if (reqString.find(\"rnrn\") == std::string::npos)\n";
 
             // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
             //             Host: localhost:8080\n \
@@ -156,7 +159,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
             //         Content-length: 17 \
             //         Content-type: text/html\n \
             //         \r\n\r\n";
-            std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
+            // std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
             // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
             if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
@@ -165,7 +168,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
                     // set redirection status code
                     // create response (page content + content type)
                 // else -> handle method-function (GET, POST, DELETE):
-                std::cout << "\t\t\t\ttest in deal_with_data \n";
+                // std::cout << "\t\t\t\ttest in deal_with_data \n";
                 response.request = request;
                 response.methodHandler(request.getMethod());
                 // recheck valid status code
@@ -179,14 +182,13 @@ void    HDE::testServer::deal_with_data(int listnum) {
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
     std::string answer = "HTTP/1.1 200test OK\nContent-Type: "; // To do: replace version + status code
-    // add statusCode + statusCode-description
     answer+= contentType;
     answer+= "; charset=UTF-8\nContent-Length:";
     answer+= std::to_string(content.length());
     answer+= "\n\n";
     answer+= content;
 
-    // std::cout << "answer = [" << answer << "]\n" << std::endl;
+    // std::cout << "answer = \n[" << answer << "]\n" << std::endl;
     write(connectListSocket, answer.c_str(), answer.size());
 }
 

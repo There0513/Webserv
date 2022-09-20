@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   testServer.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/19 15:06:17 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/20 18:08:37 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,10 @@ namespace HDE {
             void    handle_new_connections(ListeningSocket *socketToHandle);
             void    setNonBlocking(int);
             void    deal_with_data(int);
+
+            bool    _checkUpload;
             
+
         public:
             testServer(ConfigFile cf);
             

@@ -1,0 +1,24 @@
+------WebKitFormBoundaryiOKiACeENdagCvvN
+Content-Disposition: form-data; name="new_file"; filename="download"
+Content-Type: application/octet-stream
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>hello Website</title>
+    <!-- <link rel="stylesheet" href="./style.css"> -->
+    <!-- <link rel="icon" href="./favicon.ico" type="image/x-icon"> -->
+    <link rel="icon" href="data:,">
+
+  </head>
+
+  <body>
+    <main>
+        <h1>Welcome welcome</h1>
+    </main>
+    coucou from Server/index.html
+  </body>
+  
+</html>
+------WebKitFormBoundaryiOKiACeENdagCvvN--

@@ -11,8 +11,8 @@ Color::Modifier		rouge(Color::FG_RED);
 Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(0), _auto(false) {
-    std::cout << "buffer in constructor request: |" << buffer << "|\n";
-    parseRequest(buffer, socket);
+    // std::cout << "buffer in constructor request: |" << buffer << "|\n";
+        parseRequest(buffer, socket);
 }
 
 httpRequest::httpRequest(void) {}
@@ -25,6 +25,7 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
 
     int start = buffer.find("\r\n\r\n");
     int end = buffer.size();
+    // std::cout << "###############################buffer: |" << buffer << "|" << std::endl;
 
     if (start != std::string::npos) {    // check if "/r/n/r/n" present
 
@@ -95,11 +96,14 @@ void    httpRequest::parseHeader(std::string buffer) {
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
         line = buffer.substr(0, buffer.find("\r\n"));
     }
+       // print _header:
+    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
+    //     std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
 }
 
 void    httpRequest::parseBody(std::string *contentLength) {  // already set in parseRequest
     
-    std::cout << "_body: |" << _body << "|" << std::endl;
+    // std::cout << "_body: |" << _body << "|" << std::endl;
 
     int len = stoi(*contentLength);
 
@@ -510,6 +514,10 @@ std::string httpRequest::getUrl() {
     return _url;
 }
 
+std::string httpRequest::getVersion() {
+    return _version;
+}
+
 void    httpRequest::setHost(std::string buffer) {
     // get the Host of the request
     int start = buffer.find_first_of(":") + 2;
@@ -563,6 +571,10 @@ std::string *httpRequest::getHeaderValue(std::string const &key) {
 
 void        httpRequest::setHeaderValue(std::string key, std::string value) {
     _header.push_back(std::make_pair(key, value));
+}
+
+std::vector<std::pair<std::string, std::string > >  httpRequest::getHeader() {
+    return _header;
 }
 
 ConfigFile* httpRequest::getConfigFile() {

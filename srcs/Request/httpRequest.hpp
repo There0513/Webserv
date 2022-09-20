@@ -31,11 +31,11 @@ class httpRequest
         std::string                  decodeChunks(long socket);
 
     public:
-        bool        _auto;// tmp public
         httpRequest(std::string buffer, long socket);
         httpRequest();
         ~httpRequest();
 
+        bool        _auto;// tmp public
         std::string     readContent();
         std::string     readFileContent();
         std::string     readDirectoryAutoindex();
@@ -44,9 +44,9 @@ class httpRequest
         void            getFirstLine(std::string str, std::string deli);
         int             checkFirstLine();
         void            setQuery();
+        void            uploadFile(std::string buffer);
         void            parseHeader(std::string buffer);
         void            parseBody(std::string *contentLength);
-
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);
         bool            isCgi = false;
@@ -56,6 +56,8 @@ class httpRequest
         void        setUrl(std::string url);
         std::string getUrl();
         
+        std::string getVersion();
+
         void        setHost(std::string buffer);
         std::string getHost();
 
@@ -70,6 +72,7 @@ class httpRequest
 
         std::string *getHeaderValue(std::string const &key);
         void        setHeaderValue(std::string key, std::string value);
+        std::vector<std::pair<std::string, std::string > >  getHeader();
 
         ConfigFile* getConfigFile();
         
