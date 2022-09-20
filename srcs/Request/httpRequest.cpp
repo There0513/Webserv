@@ -111,6 +111,8 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
 
     int start = 0;
     int end = str.find(deli);
+    if (!str[0])    // -> check added for testing with telnet - otherwise _method[0] == '' and _method.compare("GET") not OK
+        start++;
 
     if (end != -1)
         _method = str.substr(start, end - start);
@@ -133,6 +135,9 @@ int     httpRequest::checkFirstLine() {
     if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
         std::cerr << "Error: method not valid." << std::endl;
+        std::cerr << "_method[0] = : |" << _method[0] << "|\n";
+        std::cerr << "_method[1] = : |" << _method[1] << "|\n";
+        std::cerr << "_method[2] = : |" << _method[2] << "|\n";
         // change status code + return -1
         return -1;
     }

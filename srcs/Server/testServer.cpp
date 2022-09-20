@@ -114,6 +114,7 @@ void    HDE::testServer::responder() {
 void    HDE::testServer::deal_with_data(int listnum) {
     httpResponse        response;
 
+    std::cout << "\tdeal_with_data  listnum: " << listnum << "\n\n";
     if ((_ret = read(connectList[listnum], buffer, 30000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
@@ -121,33 +122,57 @@ void    HDE::testServer::deal_with_data(int listnum) {
     }
     else {
         buffer[_ret] = '\0';
-        // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
-        //             Host: localhost:8080\n \
-        //             User-Agent: custom-client\n \
-        //             Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
-        //             Connection: Keep-Alive\n \
-        //             \r\n\r\n";
-//         std::string buf = "POST /forms HTTP/1.1\r\n \
-// Host: localhost:8080 \
-// User-Agent: custom-client \
-// Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
-// Connection: Keep-Alive \
-// Content-length: 17 \
-// Content-type: text/html\n \
-// \r\n\r\n";
-        httpRequest request(buffer, connectList[listnum]);    // parse request-string into 'httpRequest request'
-        // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
-        if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
-            request.handleURL(*_ConfigFile);    // (theresa) mute to test cgi
-            // if redirection configured
-                // set redirection status code
-                // create response (page content + content type)
-            // else -> handle method-function (GET, POST, DELETE):
-            std::cout << "\t\t\t\ttest in deal_with_data \n";
-            response.request = request;
-            response.methodHandler(request.getMethod());
-            // recheck valid status code
-            handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
+        // save buffer in _requestSrring:
+        for (int i = 0; buffer[i]; i++) {
+            std::cout << buffer[i];
+            _requestVec.push_back(buffer[i]);
+        }
+        // std::cout << "\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_requestVec:\n";
+        // for (std::vector<char>::iterator it = _requestVec.begin(); it != _requestVec.end(); it++)
+        //     std::cout << *it;
+        // std::cout << "\nEND~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_requestVec:\n";
+
+        // before parsing request:      need to check if end of request received rnrn
+        std::string reqString(_requestVec.begin(), _requestVec.end());
+        std::cout << "\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~reqString:|" << reqString << "|\n";
+        // 'if' needs to be muted for tests without telnet, but unmuted for tests with telnet (need to find a solution!):
+        if (reqString.find("\n\r\n\r\n") == std::string::npos) {    // \n at beginning added for \n of last req.line
+            std::cout << "\t\tNOT found \tif (reqString.find(\"rnrn\") == std::string::npos)\n";
+        }
+        else {
+            std::cout << "\t\tfound \tELSE of if (reqString.find(\"rnrn\") == std::string::npos)\n";
+
+            // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
+            //             Host: localhost:8080\n \
+            //             User-Agent: custom-client\n \
+            //             Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
+            //             Connection: Keep-Alive\n \
+            //             \r\n\r\n";
+            // std::string buf = "POST /forms HTTP/1.1\r\n \
+            //         Host: localhost:8080 \
+            //         User-Agent: custom-client \
+            //         Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
+            //         Connection: Keep-Alive \
+            //         Content-length: 17 \
+            //         Content-type: text/html\n \
+            //         \r\n\r\n";
+            std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
+            httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
+            // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
+            if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
+                request.handleURL(*_ConfigFile);    // (theresa) mute to test cgi
+                // if redirection configured
+                    // set redirection status code
+                    // create response (page content + content type)
+                // else -> handle method-function (GET, POST, DELETE):
+                std::cout << "\t\t\t\ttest in deal_with_data \n";
+                response.request = request;
+                response.methodHandler(request.getMethod());
+                // recheck valid status code
+                handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
+                reqString = "";
+                _requestVec.clear();
+            }
         }
     }
 }
