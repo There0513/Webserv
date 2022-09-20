@@ -167,7 +167,6 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
         std::string root = getValue(port, "", "root")[0];
 
         if (url.find(".") == std::string::npos) {
-            std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
             if (url[0] == '/')  // without double '//' in new url
@@ -403,17 +402,6 @@ void     ConfigFile::checkErrorConfig(void) {
                 exit(0);                
             }
         }
-
-        // // CHECK PAGES EXTENSION
-        // if (it->first.find("error_page") != std::string::npos) {
-
-        //     if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
-        //     || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
-
-        //         std::cout << red << "Config File Error: [" << it->second << "] is not an acceptable extension" << def << std::endl;
-        //         exit(0);
-        //     }
-        // }
     }
     // Check that all the mandatory directives are present in each server block
     if (checkRoot() == 0) {
