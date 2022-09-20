@@ -468,7 +468,7 @@ int     httpRequest::isValid(ConfigFile & cf) {
         // std::cout << "\t\t3\tfind catch in isValid!!!!!!!!!!!!!\n";
 
         if (_extension == "py" || _extension == "pl" || _extension == "php") {
-            cf.getValue(_host, _url, "cgi");        // question pour capucine: comment modifier le configFile pour que ca return true ici?!?!? HELP PLEASE :)
+            cf.getValue(_host, _url, "cgi");       // question pour capucine: comment modifier le configFile pour que ca return true ici?!?!? HELP PLEASE :)
             isCgi = true;
         }
     }

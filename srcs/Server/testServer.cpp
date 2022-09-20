@@ -188,7 +188,7 @@ void    HDE::testServer::handleResponse(std::string content, std::string content
     answer+= "\n\n";
     answer+= content;
 
-    // std::cout << "answer = \n[" << answer << "]\n" << std::endl;
+    std::cout << "answer = \n[" << answer << "]\n" << std::endl;
     write(connectListSocket, answer.c_str(), answer.size());
 }
 

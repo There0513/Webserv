@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/20 19:08:18 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/20 21:27:08 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,8 +121,8 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
 
     std::string str = getSection(port, url, directive);
     if (directive == "cgi") {
-        std::cout << "str = " << str;
-        std::cout << "\nin getValue from config cgi check:\tport: " <<  port << "url: " << url << " directive: " << directive << std::endl;
+        std::cout << "\n\n\nstr = " << str << "\n\n\n";
+        std::cout << "\n\n\nin getValue from config cgi check:\nport: " <<  port << "\nurl: " << url << " \ndirective: " << directive << std::endl;
     }
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
