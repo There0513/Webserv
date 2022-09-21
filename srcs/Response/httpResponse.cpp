@@ -74,16 +74,12 @@ void    httpResponse::POSTMethod() {
         // create a file with raw data from body
         // std::cout << "request.getBody(): [" << request.getBody() << "]";
         std::string pathwithnewfile("/mnt/nfs/homes/threiss/ourWebserv/srcs/Server/www/uploads/newfile");
-        std::ofstream monFlux(pathwithnewfile.c_str());
-
-        if(monFlux)
+        std::ofstream newFile(pathwithnewfile.c_str());
+        if(newFile)
         {
             // std::cout << "file created\n";
-            monFlux << request.getBody();
-            // request.setUrl("uploads/uploadOK.html");
-
+            newFile << request.getBody();
         }
-        // std::cout << "in post check url after upload: " << request.getUrl() << std::endl;
         setPageContent(request.readContent());
         findContentType(request.getUrl());
 }

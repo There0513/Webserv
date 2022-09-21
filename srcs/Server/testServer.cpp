@@ -162,16 +162,15 @@ void    HDE::testServer::deal_with_data(int listnum) {
             // std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
             // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
-            if (request.isValid(*_ConfigFile) != -1) {// check if request is valid
-                request.handleURL(*_ConfigFile);    // (theresa) mute to test cgi
+            if (request.isValid(*_ConfigFile) != -1) {
+                request.handleURL(*_ConfigFile);
                 // if redirection configured
                     // set redirection status code
                     // create response (page content + content type)
                 // else -> handle method-function (GET, POST, DELETE):
-                // std::cout << "\t\t\t\ttest in deal_with_data \n";
                 response.request = request;
                 response.methodHandler(request.getMethod());
-                // recheck valid status code
+                // recheck valid status code TO DO
                 handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
                 reqString = "";
                 _requestVec.clear();

@@ -72,7 +72,7 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
         setHost(buffer);
     }
     else
-        std::cout << "\t\tno rnrn in request! WAIT\n\n";
+        std::cout << "\t\telse: no rnrn in parseRequest!\n\n";
 }
 
 void    httpRequest::parseHeader(std::string buffer) {
