@@ -207,7 +207,7 @@ std::string         httpRequest::readDirectoryAutoindex() {
     std::string root;
     
     try {
-        root = _ConfigFile->getValue("localhost:8080", "/", "root")[0];
+        root = _ConfigFile->getValue(_host, "/", "root")[0];
     }
     catch (ConfigFile::ValueNotFoundException &e) {
         root = "";
@@ -215,7 +215,7 @@ std::string         httpRequest::readDirectoryAutoindex() {
     
     if (root == "") {
         try {
-            root = _ConfigFile->getValue("localhost:8080", "", "root")[0];
+            root = _ConfigFile->getValue(_host, "", "root")[0];
         }
         catch (ConfigFile::ValueNotFoundException &e) {
            root = "";
@@ -501,6 +501,7 @@ int     httpRequest::isValid(ConfigFile & cf) {
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
     std::cout << "_url beginning of handleURL: " << _url << "\n";
+    std::cout << "in handleURL  _host: " << _host << "\n";
     
     try {
 

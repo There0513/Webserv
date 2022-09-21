@@ -180,8 +180,11 @@ int httpResponse::executeCgi() {
 	char *emptyempty[] = { "", NULL };  // tmp find solution
     
     // char* execArgv = "./srcs/Server/www/cgi-bin/perl.pl"; // + scriptname  | tmp
-    std::cout << "url = " << request.getUrl() << "\n";
-    *(execArgv + 1) = (char *)strdup(request.getUrl().substr(1, request.getUrl().size()).c_str());
+    std::cout << "url in executeCgi = " << request.getUrl() << "\n";
+    if (request.getUrl()[0] == '/')
+        *(execArgv + 1) = (char *)strdup(request.getUrl().substr(1, request.getUrl().size()).c_str());
+    else
+        *(execArgv + 1) = (char *)strdup(request.getUrl().substr(0, request.getUrl().size()).c_str());
 
     // get cgi location from config file    execArgv = cgiLocation/script.pl/py...
     // check if executable exists
@@ -246,13 +249,13 @@ void    httpResponse::createEnvVar() {
         _env["CONTENT_LENGTH"] = "0";
     // _env["CONTENT_TYPE"] = request.getHeaderValue("content-type")->c_str();
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    _env["REDIRECT_STATUS"] = "200";
-    _env["REQUEST_METHOD"] = "GET";
+    _env["REDIRECT_STATUS"] = request.getStatusCode();
+    _env["REQUEST_METHOD"] = request.getMethod().c_str();
     _env["QUERY_STRING"] = request.getBody().c_str();   // ex.: "first=Anna&last=REISS"
     _env["SCRIPT_NAME"] = "srcs/Server/www/cgi-bin/python.py";
     _env["SERVER_NAME"] = "0";
-    _env["SERVER_PORT"] = "8080";
-    _env["SERVER_PROTOCOL"] = "HTTP/1.1";
+    _env["SERVER_PORT"] = request.getHost().c_str();
+    _env["SERVER_PROTOCOL"] = request.getVersion().c_str();
     _env["SERVER_SOFTWARE"] = "xy/1.0";
 
 	_envVar = new char*[_env.size() + 1];

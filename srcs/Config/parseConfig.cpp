@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/20 21:27:08 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/21 18:19:43 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,8 @@ void    ConfigFile::getPorts() {
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
     try {
-    std::cout << "\t\tfindpath\tport: " << port << "\turl: " << url << "\n\n\n";
+    std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
+    std::cout << "\t\turl: " << url << "\n\n\n";
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
@@ -172,17 +173,27 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
         if (url.find(".") == std::string::npos) {
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
-            if (url[0] == '/')  // without double '//' in new url
+            if (url[0] == '/'){  // without double '//' in new url
+                std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
                 return (root + url + checkIndex(port, url, root));
+            }
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
             return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else in findPath:\n";
+            if ((url.find("/"+root)) != std::string::npos) {
+                std::cout << "return just URL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-> url.substr(root.size() + 1, url.size()): " << url.substr(root.size() + 1, url.size()) << std::endl;
+                return url;
+                // return url.substr(root.size() + 1, url.size());
+            }
             // std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));     // muted (theresa)
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + extension in findPath: " << root + extension << "\n";
             // return (root + extension);                                                                           // muted (theresa)
 
             // muted because for example url = http://localhost:8080/uploads/index.html was sent to srcs/Server/www/index.html instead of srcs/Server/www/uploads/index.html
             
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
             return (root + url); 
         }
     }
@@ -472,7 +483,7 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     }
     // check autoindex here; if on -> return "" ?:
     try {
-        std::string autoind = getValue("localhost:8080", "/", "autoindex")[0];
+        std::string autoind = getValue(host, "/", "autoindex")[0];
         return ""; // use autoindex in readContent/readDirectoryAutoindex
     }
     catch (ConfigFile::ValueNotFoundException &e) {
