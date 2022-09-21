@@ -448,38 +448,50 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
     // if POST: content-length header
 
-    try {        
+    try {   
+
         if (checkFirstLine() == -1) { // if -1  -> return/send error response
+         
             std::cout << "ERROR: Invalid request" << std::endl;
+         
             _url = cf.getErrorPage(_host, "400");
         }
-        // std::cout << "\t\t1\tfind catch in isValid!!!!!!!!!!!!!\n";
+
         if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
+        
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
+        
             _url = cf.getErrorPage(_host, "400");
         }
-        // std::cout << "\t\t2\tfind catch in isValid!!!!!!!!!!!!!\n";
 
         // Check if there is a cgi, and if yes, if the config file is set up for it
         size_t ext = _url.find_last_of(".");
+        
         if (ext == std::string::npos)
             return 1;
+        
         _extension = _url.substr(ext + 1, _url.size());
-        // std::cout << "\t\t3\tfind catch in isValid!!!!!!!!!!!!!\n";
 
         if (_extension == "py" || _extension == "pl" || _extension == "php") {
-            cf.getValue(_host, _url, "cgi");       // question pour capucine: comment modifier le configFile pour que ca return true ici?!?!? HELP PLEASE :)
+            
+            cf.getValue(_host, "", "cgi");
+            
             isCgi = true;
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
+        
         std::cout << rouge << e.what() << defi << std::endl;
+        
         _url = cf.getErrorPage(_host, "404");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
+       
         std::cout << rouge << e.what() << ". Check the URI of your request." << defi << std::endl;
-        _url = cf.getErrorPage(_host, "404");            // tmp muted to test cgi (theresa)
-        // isCgi = false;                                      // tmp added to make cgi work without error page (theresa)
+       
+        _url = cf.getErrorPage(_host, "404");           
+       
+        isCgi = false;                                    
     }
     // min/max length content --> only for POST method (?)
     return 1;   // all good
@@ -488,29 +500,38 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
-std::cout << "_url beginning of handleURL: " << _url << "\n";
+    std::cout << "_url beginning of handleURL: " << _url << "\n";
+    
     try {
 
-        if (_url.find("error") == std::string::npos)
+        if (_url.find("error") == std::string::npos) {
+         
+            _url = cf.checkRedirection(_host, _url); // check if there is a redirection
+         
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
-
+        }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
+        
         std::cout << rouge << e.what() << defi << std::endl;
     }
     catch (ConfigFile::ValueNotFoundException &e) {
+        
         std::cout << rouge << e.what() << defi << std::endl;
     }
-std::cout << "_url end of handleURL: " << _url << "\n";
+
+    std::cout << "_url end of handleURL: " << _url << "\n";
 }
 
 /* ======================================= SETTERS - GETTERS ===========================================================*/
 
  void       httpRequest::setUrl(std::string url) {
+   
     _url = url;
  }
 
 std::string httpRequest::getUrl() {
+   
     return _url;
 }
 
@@ -523,53 +544,65 @@ void    httpRequest::setHost(std::string buffer) {
     int start = buffer.find_first_of(":") + 2;
     
     if ((start != std::string::npos)) {
+        
         std::string tmp = buffer.substr(start, buffer.length());
+        
         _host = buffer.substr(start, tmp.find('\n'));
     }
     // _host = getHeaderValue("host");
 }
 
 std::string    httpRequest::getHost() {
+    
     return _host;
 }
 
 
 std::string httpRequest::getBody() {
+    
     return _body;
 }
 
 std::string httpRequest::getExtension() {
+    
     return _extension;
 }
 
 void    httpRequest::setMethod(std::string method) {
+    
     _method = method;
 }
 
 std::string httpRequest::getMethod() {
+    
     return _method;
 }
 
 void    httpRequest::setStatusCode(int StatusCode) {
-    _statusCode = StatusCode;
+  
+   _statusCode = StatusCode;
 }
 
 int     httpRequest::getStatusCode() {
+  
     return _statusCode;
 }
 
 std::string *httpRequest::getHeaderValue(std::string const &key) {
-	for (std::vector<std::pair<std::string, std::string> >::iterator
+	
+    for (std::vector<std::pair<std::string, std::string> >::iterator
 			 it = _header.begin();
 		 it != _header.end(); ++it)
 	{
 		if (it->first == key)
 			return (&it->second);
 	}
+
 	return (NULL);
 }
 
 void        httpRequest::setHeaderValue(std::string key, std::string value) {
+    
     _header.push_back(std::make_pair(key, value));
 }
 

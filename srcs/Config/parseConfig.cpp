@@ -170,7 +170,6 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
         std::string root = getValue(port, "", "root")[0];
 
         if (url.find(".") == std::string::npos) {
-            std::cout << "\n\n\nReturn from find path " << root + checkIndex(port, url, root) << "\n\n\n" << std::endl;
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
             if (url[0] == '/')  // without double '//' in new url
@@ -197,6 +196,7 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
          getValue(host, url, "authorized_methods");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
+        
         return true;
     }
 
@@ -210,6 +210,25 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
             && std::find(it->second.begin(), it->second.end(), method) != it->second.end())
             return true;
     return false;
+}
+
+std::string     ConfigFile::checkRedirection(std::string const & host, std::string const & url) {
+
+    try {
+
+        std::string redirection = getValue(host, url, "redirection")[0];
+        if (redirection.find("301") == std::string::npos) {
+
+            std::cout << "ERROR: Redirection status code can only be 301" << std::endl;
+            return url;
+        }
+        std::string updated_url = redirection.substr(redirection.find_first_of(":") + 1, redirection.size());
+        return updated_url;
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+
+        return url;
+    }
 }
 
 std::string     ConfigFile::getErrorPage(std::string const & host, std::string const & error) {
@@ -406,17 +425,6 @@ void     ConfigFile::checkErrorConfig(void) {
                 exit(0);                
             }
         }
-
-        // // CHECK PAGES EXTENSION
-        // if (it->first.find("error_page") != std::string::npos) {
-
-        //     if (it->second[0].substr(it->second[0].find_last_of(".") + 1) != "html"
-        //     || it->second[1].substr(it->second[0].find_last_of(".") + 1) != "html") {
-
-        //         std::cout << red << "Config File Error: [" << it->second << "] is not an acceptable extension" << def << std::endl;
-        //         exit(0);
-        //     }
-        // }
     }
     // Check that all the mandatory directives are present in each server block
     if (checkRoot() == 0) {
