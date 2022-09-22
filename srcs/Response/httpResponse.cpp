@@ -59,7 +59,7 @@ void    httpResponse::GETMethod() {
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
-void    httpResponse::POSTMethod() {
+void    httpResponse::POSTMethod(ConfigFile * cf) {
     std::cout << "\tPOSTmethod:\n";
         // check for upload file
             // if !
@@ -71,14 +71,19 @@ void    httpResponse::POSTMethod() {
                         // ex: Content-Type: multipart/form-data;boundary="boundary"
                         // handle upload - create file etc
 
+
+        std::vector<std::string> upload = cf->getValue(request.getHost(), "", "upload_path");
+        std::cout << "upload path = " << upload[0] << std::endl;
         // create a file with raw data from body
-        // std::cout << "request.getBody(): [" << request.getBody() << "]";
-        std::string pathwithnewfile("/mnt/nfs/homes/threiss/ourWebserv/srcs/Server/www/uploads/newfile");
+        // std::string pathwithnewfile("/mnt/nfs/homes/threiss/ourWebserv/srcs/Server/www/uploads/newfile.pdf");
+        std::cout << getenv("PWD") << "\n";
+        exit(1);
+        std::string pathwithnewfile("/home/theresa/code/42/42_cursus/ourWebserv/srcs/Server/www/uploads/newfile");
         std::ofstream newFile(pathwithnewfile.c_str());
         if(newFile)
         {
-            // std::cout << "file created\n";
-            newFile << request.getBody();
+            std::string test = request.getBody();
+            newFile.write(test.c_str(), test.size());
         }
         setPageContent(request.readContent());
         findContentType(request.getUrl());
@@ -113,13 +118,13 @@ void    httpResponse::DELETEMethod() {
     findContentType(request.getUrl());
 }
 
-void        httpResponse::methodHandler(std::string method) {
+void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     if (checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
         GETMethod();
     else if (method[0] == 'P')
-        POSTMethod();
+        POSTMethod(cf);
     else if (method[0] == 'D')
         DELETEMethod();
     else

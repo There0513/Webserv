@@ -26,9 +26,9 @@ class   httpResponse
 
         /* handle methods */
         void        GETMethod();
-        void        POSTMethod();
+        void        POSTMethod(ConfigFile * cf);
         void        DELETEMethod();
-        void        methodHandler(std::string method);
+        void        methodHandler(ConfigFile * cf, std::string method);
 
         /* handle CGI */
         int         checkCgi();

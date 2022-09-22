@@ -5,7 +5,6 @@
 
 HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
 
-    _checkUpload = false;
     _ConfigFile = &cf;
     launch();
 }
@@ -17,13 +16,13 @@ void    HDE::testServer::launch() {
 
     while (true)
     {
-        // std::cout << "====== Waiting for the connection =====" << std::endl;
+        std::cout << "====== Waiting for the connection =====" << std::endl;
 
         accepter();
         handler();
         responder();
         //     ... do not time out
-        // std::cout << "=============== Done ==================" << std::endl;
+        std::cout << "=============== Done ==================" << std::endl;
     }
 }
 
@@ -112,56 +111,66 @@ void    HDE::testServer::responder() {
     }
 }
 
+int endOfFile(std::string reqString) {
+    size_t first;
+    size_t  sec;
+    
+    if ((first = reqString.find("----WebKitFormBoundary")) != std::string::npos) {       //   if --- in reqstring
+    std::cout << "if ((first = reqString.find(----WebKitFormBoundary)) != std::string::npos)\t first: " << first << "\n";
+        if ((sec = reqString.find("----WebKitFormBoundary", first + 1)) != std::string::npos) {
+    std::cout << "if ((sec = reqString.find(----WebKitFormBoundary, , first + 1)) != std::string::npos)\t sec: " << sec << "\n";
+
+            std::cout << "seccond ------ found\n";
+            if (reqString.find("----WebKitFormBoundary", sec + 1) != std::string::npos) {
+    std::cout << "if (reqString.find(----WebKitFormBoundary, sec + 1) != std::string::npos): " << reqString.find("----WebKitFormBoundary", sec + 1) << "\n";
+                if (reqString.find("----WebKitFormBoundary", sec + 1) < reqString.size()) {
+                    
+                    std::cout << reqString << "|bonbonbon\n";
+                    // exit(1);
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 void    HDE::testServer::deal_with_data(int listnum) {
     httpResponse        response;
 
-    // std::cout << "\tdeal_with_data  listnum: " << listnum << "\n\n";
-    if ((_ret = read(connectList[listnum], buffer, 30000)) < 0) {
+    // while ((_ret = read(connectList[listnum], buffer, 3000000)) >= 0) {
+        // cp _ret bites into a buffer 
+        // example: new char[3000000];
+        // memcpy _ret bytes dans le tableau de char
+        // push_back le tableau dans le vector
+
+        // for (int i = 0; buffer[i]; i++) {
+        //     // std::cout << buffer[i];
+        //     _requestVec.push_back(buffer[i]);
+        // }
+    // }
+
+
+    if ((_ret = read(connectList[listnum], buffer, 3000000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
         connectList[listnum] = 0;
     }
     else {
         buffer[_ret] = '\0';
-        // save buffer in _requestSrring:
-        for (int i = 0; buffer[i]; i++) {
-            std::cout << buffer[i];
+        for (int i = 0; i < _ret; i++)
             _requestVec.push_back(buffer[i]);
-        }
-        // std::cout << "\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_requestVec:\n";
-        // for (std::vector<char>::iterator it = _requestVec.begin(); it != _requestVec.end(); it++)
-        //     std::cout << *it;
-        // std::cout << "\nEND~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_requestVec:\n";
 
         // before parsing request:      need to check if end of request received rnrn
         std::string reqString(_requestVec.begin(), _requestVec.end());
-        // std::cout << "\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~reqString:|" << reqString << "|\n";
-        // 'if' needs to be muted for tests without telnet, but unmuted for tests with telnet (need to find a solution!):
-        // std::cout << "_checkupload = " << _checkUpload << ".\n";
-        if (reqString.find("\r\n\r\n") == std::string::npos || (reqString.find("---") != std::string::npos && _checkUpload == false)) {    // \n at beginning added for \n of last req.line?! | "\r\n\r\n" working for telnet (just once) + browser
-            _checkUpload = true;
-            // std::cout << "\t\tWAIT NOT found \tif (reqString.find(\"rnrn\") == std::string::npos)\n";
+        if (reqString.find("\r\n\r\n") == std::string::npos && reqString.find("----WebKitFormBoundary") == std::string::npos) {
+            std::cout << "\t\tWAIT for next line in telnet\n";
+        }
+        else if (reqString.find("----WebKitFormBoundary") != std::string::npos && endOfFile(reqString) != 1){       // wait till end of request
+            std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
         }
         else {
-            // std::cout << "\t\tfound \tELSE of if (reqString.find(\"rnrn\") == std::string::npos)\n";
-
-            // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
-            //             Host: localhost:8080\n \
-            //             User-Agent: custom-client\n \
-            //             Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
-            //             Connection: Keep-Alive\n \
-            //             \r\n\r\n";
-            // std::string buf = "POST /forms HTTP/1.1\r\n \
-            //         Host: localhost:8080 \
-            //         User-Agent: custom-client \
-            //         Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
-            //         Connection: Keep-Alive \
-            //         Content-length: 17 \
-            //         Content-type: text/html\n \
-            //         \r\n\r\n";
-            // std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
-            // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
             if (request.isValid(*_ConfigFile) != -1) {
                 request.handleURL(*_ConfigFile);
                 // if redirection configured
@@ -169,7 +178,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
                     // create response (page content + content type)
                 // else -> handle method-function (GET, POST, DELETE):
                 response.request = request;
-                response.methodHandler(request.getMethod());
+                response.methodHandler(_ConfigFile, request.getMethod());
                 // recheck valid status code TO DO
                 handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
                 reqString = "";
