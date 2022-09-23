@@ -46,14 +46,6 @@ void    httpResponse::findContentType(std::string url) {
             /* handle methods */
 void    httpResponse::GETMethod() {
     std::cout << "\tGET method:\n";
-        // find resource    handle path (location, root, ...)
-        // check if file exists with stat()
-        // if path == directory
-            // dirStream = opendir()    // handle error if !opendir()
-            // find index.html via readdir(dirStream) + append path + filename
-                // if !index.html -> closedir(dirStream) -> check if autoindex + generate repsponse
-            // closedir(dirStream);
-        // else open file + set content:
             setPageContent(request.readContent());
             findContentType(request.getUrl());
 }
@@ -61,32 +53,68 @@ void    httpResponse::GETMethod() {
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    httpResponse::POSTMethod(ConfigFile * cf) {
     std::cout << "\tPOSTmethod:\n";
-        // check for upload file
-            // if !
-                // error -> post req not accepted
-            // if upload file:
-                // check content-type form
-                    // 'form-data' upload:
-                        // extract boundary string from Content-Type
-                        // ex: Content-Type: multipart/form-data;boundary="boundary"
-                        // handle upload - create file etc
 
+    // check if upload:
+    if (request.getHeaderValue("Content-Disposition:"))
+        POSTUploads(cf);
+    setPageContent(request.readContent());
+    findContentType(request.getUrl());
+}
 
+void    httpResponse::POSTUploads(ConfigFile * cf) {
+    std::string path = getenv("PWD");
+
+    try {
         std::vector<std::string> upload = cf->getValue(request.getHost(), "", "upload_path");
-        std::cout << "upload path = " << upload[0] << std::endl;
-        // create a file with raw data from body
-        // std::string pathwithnewfile("/mnt/nfs/homes/threiss/ourWebserv/srcs/Server/www/uploads/newfile.pdf");
-        std::cout << getenv("PWD") << "\n";
-        exit(1);
-        std::string pathwithnewfile("/home/theresa/code/42/42_cursus/ourWebserv/srcs/Server/www/uploads/newfile");
-        std::ofstream newFile(pathwithnewfile.c_str());
-        if(newFile)
-        {
-            std::string test = request.getBody();
-            newFile.write(test.c_str(), test.size());
+        // std::cout << "upload path = " << upload[0] << std::endl;
+        path += "/srcs/Server/www" + upload[0];
+    }
+    catch (ConfigFile::ValueNotFoundException &e) {
+        path += "/srcs/Server/www/uploads";
+    }
+            
+    std::string fileContent = request.getBody();
+    size_t      pos;
+
+    POSTcleanUpUploadFile(&fileContent);
+    if ((pos = request.getHeaderValue("Content-Disposition:")->find("filename=")) != std::string::npos) {
+        _filename = request.getHeaderValue("Content-Disposition:")->substr(pos + 10, request.getHeaderValue("Content-Disposition:")->size());
+    } else
+        _filename = "newfile";
+    if (_filename[_filename.size() - 1] == '"')
+        _filename = _filename.substr(0, _filename.size() - 1);      // delete last "
+            
+    // create a file with raw data from body
+    std::string pathwithnewfile(path + "/" +  _filename);
+    std::ofstream newFile(pathwithnewfile.c_str());
+    if(newFile)
+        newFile.write(fileContent.c_str(), fileContent.size());
+}
+
+// delete first + last line from body ------:
+void    httpResponse::POSTcleanUpUploadFile(std::string *fileContent) {
+        size_t      pos;
+
+        if ((pos = fileContent->find_first_of("WebKitFormBoundary")) != std::string::npos && pos < 100) { // pos < 100 to be sure it is the header --- and not the one at the end
+            pos = fileContent->find_first_of("\n");
+            std::cout << "pos \\n: " << pos << std::endl;
+            *fileContent = fileContent->substr(pos + 1, fileContent->size());
         }
-        setPageContent(request.readContent());
-        findContentType(request.getUrl());
+        if ((pos = fileContent->find_first_of("Content-Disposition")) != std::string::npos) {
+            pos = fileContent->find_first_of("\n");
+            std::cout << "pos \\n: " << pos << std::endl;
+            *fileContent = fileContent->substr(pos + 1, fileContent->size());
+        }
+        if ((pos = fileContent->find_first_of("Content-Type")) != std::string::npos) {
+            pos = fileContent->find_first_of("\n");
+            std::cout << "pos \\n: " << pos << std::endl;
+            *fileContent = fileContent->substr(pos + 1, fileContent->size());
+        }
+        if ((pos = fileContent->find_last_of("------WebKitFormBoundary")) != std::string::npos) {
+            *fileContent = fileContent->substr(0, pos);
+            *fileContent = fileContent->substr(0, fileContent->find_last_of("\n"));
+            *fileContent = fileContent->substr(0, fileContent->find_last_of("\n"));
+        }
 }
 
 // The DELETE method deletes the specified resource.

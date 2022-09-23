@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/21 18:19:43 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/23 11:32:06 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,10 +120,10 @@ std::string ConfigFile::getSection(std::string const & host, std::string url, st
 std::vector<std::string> const & ConfigFile::getValue(std::string const & port, std::string const & url, std::string const & directive) {
 
     std::string str = getSection(port, url, directive);
-    if (directive == "cgi") {
-        std::cout << "\n\n\nstr = " << str << "\n\n\n";
-        std::cout << "\n\n\nin getValue from config cgi check:\nport: " <<  port << "\nurl: " << url << " \ndirective: " << directive << std::endl;
-    }
+    // if (directive == "cgi") {
+        // std::cout << "\n\n\nstr = " << str << "\n\n\n";
+        // std::cout << "\n\n\nin getValue from config cgi check:\nport: " <<  port << "\nurl: " << url << " \ndirective: " << directive << std::endl;
+    // }
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
     if (it == _content.end())

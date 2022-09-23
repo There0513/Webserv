@@ -11,6 +11,7 @@ class   httpResponse
         std::string pageContent;
         std::string _contentType;
 
+        std::string _filename;
 		char        **_envVar;      // env var for cgi execve
 
     
@@ -29,6 +30,8 @@ class   httpResponse
         void        POSTMethod(ConfigFile * cf);
         void        DELETEMethod();
         void        methodHandler(ConfigFile * cf, std::string method);
+        void        POSTcleanUpUploadFile(std::string *fileContent);
+        void        POSTUploads(ConfigFile * cf);
 
         /* handle CGI */
         int         checkCgi();

@@ -111,30 +111,6 @@ void    HDE::testServer::responder() {
     }
 }
 
-int endOfFile(std::string reqString) {
-    size_t first;
-    size_t  sec;
-    
-    if ((first = reqString.find("----WebKitFormBoundary")) != std::string::npos) {       //   if --- in reqstring
-    std::cout << "if ((first = reqString.find(----WebKitFormBoundary)) != std::string::npos)\t first: " << first << "\n";
-        if ((sec = reqString.find("----WebKitFormBoundary", first + 1)) != std::string::npos) {
-    std::cout << "if ((sec = reqString.find(----WebKitFormBoundary, , first + 1)) != std::string::npos)\t sec: " << sec << "\n";
-
-            std::cout << "seccond ------ found\n";
-            if (reqString.find("----WebKitFormBoundary", sec + 1) != std::string::npos) {
-    std::cout << "if (reqString.find(----WebKitFormBoundary, sec + 1) != std::string::npos): " << reqString.find("----WebKitFormBoundary", sec + 1) << "\n";
-                if (reqString.find("----WebKitFormBoundary", sec + 1) < reqString.size()) {
-                    
-                    std::cout << reqString << "|bonbonbon\n";
-                    // exit(1);
-                    return 1;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
 void    HDE::testServer::deal_with_data(int listnum) {
     httpResponse        response;
 
@@ -150,7 +126,6 @@ void    HDE::testServer::deal_with_data(int listnum) {
         // }
     // }
 
-
     if ((_ret = read(connectList[listnum], buffer, 3000000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
@@ -164,10 +139,10 @@ void    HDE::testServer::deal_with_data(int listnum) {
         // before parsing request:      need to check if end of request received rnrn
         std::string reqString(_requestVec.begin(), _requestVec.end());
         if (reqString.find("\r\n\r\n") == std::string::npos && reqString.find("----WebKitFormBoundary") == std::string::npos) {
-            std::cout << "\t\tWAIT for next line in telnet\n";
+            // std::cout << "\t\tWAIT for next line in telnet\n";
         }
         else if (reqString.find("----WebKitFormBoundary") != std::string::npos && endOfFile(reqString) != 1){       // wait till end of request
-            std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
+            // std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
         }
         else {
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
@@ -186,6 +161,19 @@ void    HDE::testServer::deal_with_data(int listnum) {
             }
         }
     }
+}
+
+int     HDE::testServer::endOfFile(std::string reqString) {
+    size_t first;
+    size_t  sec;
+    
+    if ((first = reqString.find("----WebKitFormBoundary")) != std::string::npos) {              // if --- in reqstring
+        if ((sec = reqString.find("----WebKitFormBoundary", first + 1)) != std::string::npos)   // seccond -- found
+            if (reqString.find("----WebKitFormBoundary", sec + 1) != std::string::npos)
+                if (reqString.find("----WebKitFormBoundary", sec + 1) < reqString.size())
+                    return 1;
+    }
+    return 0;
 }
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {

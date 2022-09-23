@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:05:16 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/23 00:44:41 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/23 11:06:30 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,6 @@ void    printMapConfig(ConfigFile cf) {
     int count = 0;
 
     for (; it != mapConfig.end(); it++) {
-        // if (it->first.find("listen") != std::string::npos) {
-            // std::cout << it->second[0] << std::endl;
-            // count++;
-            // std::cout << count << std::endl;
-        // }
         std::cout << it->first << " = " << std::endl;
         std::vector<std::string>::iterator ite = it->second.begin();
         for (; ite != it->second.end(); ite++) {
