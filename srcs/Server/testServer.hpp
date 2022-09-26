@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/23 12:49:56 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/26 18:20:54 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include "SimpleServer.hpp"
 #include "../Request/httpRequest.hpp"
+#include "../Response/httpResponse.hpp"
 #include "../Config/parseConfig.hpp"
 
 namespace HDE {
@@ -42,6 +43,8 @@ namespace HDE {
             void    setNonBlocking(int);
             void    deal_with_data(int);
             int     endOfFile(std::string reqString);
+
+            httpResponse        _response;
 
 
         public:

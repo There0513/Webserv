@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/23 11:32:06 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/27 00:54:31 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,10 +120,6 @@ std::string ConfigFile::getSection(std::string const & host, std::string url, st
 std::vector<std::string> const & ConfigFile::getValue(std::string const & port, std::string const & url, std::string const & directive) {
 
     std::string str = getSection(port, url, directive);
-    // if (directive == "cgi") {
-        // std::cout << "\n\n\nstr = " << str << "\n\n\n";
-        // std::cout << "\n\n\nin getValue from config cgi check:\nport: " <<  port << "\nurl: " << url << " \ndirective: " << directive << std::endl;
-    // }
     std::map<std::string, std::vector<std::string> >::const_iterator it = _content.find(str);
     
     if (it == _content.end())
@@ -152,17 +148,17 @@ void    ConfigFile::getPorts() {
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
     try {
-    std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
-    std::cout << "\t\turl: " << url << "\n\n\n";
+    // std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
+    // std::cout << "\t\turl: " << url << "\n\n\n";
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
             return (root + checkIndex(port, url, root));
     }
         else {
             std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
             return (root + extension); //else we are looking for a file, so append the file to the root directory if any to find the file
         }
     }
@@ -174,16 +170,16 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
             if (url[0] == '/'){  // without double '//' in new url
-                std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
+                // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
                 return (root + url + checkIndex(port, url, root));
             }
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
             return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
             std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else in findPath:\n";
             if ((url.find("/"+root)) != std::string::npos) {
-                std::cout << "return just URL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-> url.substr(root.size() + 1, url.size()): " << url.substr(root.size() + 1, url.size()) << std::endl;
+                // std::cout << "return just URL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-> url.substr(root.size() + 1, url.size()): " << url.substr(root.size() + 1, url.size()) << std::endl;
                 return url;
                 // return url.substr(root.size() + 1, url.size());
             }
@@ -193,7 +189,7 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
             // muted because for example url = http://localhost:8080/uploads/index.html was sent to srcs/Server/www/index.html instead of srcs/Server/www/uploads/index.html
             
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
+            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
             return (root + url); 
         }
     }
@@ -201,7 +197,6 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
 // DETERMINE IF THE REQUESTED METHOD IS ALLOWED 
 bool            ConfigFile::isMethodAllowed(std::string const & host, std::string const & url, std::string const & method) {
-    std::cout << "\tisMethodAllowed:\n\t\thost: " << host << "\n\t\turl: " << url << "\n\t\tmethod: " << method << "\n";
 // Check if methods authorizations are mentioned, else return true
     try {
          getValue(host, url, "authorized_methods");
@@ -223,11 +218,12 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
     return false;
 }
 
-std::string     ConfigFile::checkRedirection(std::string const & host, std::string const & url) {
+std::string     ConfigFile::checkRedirection(int *statusCode, std::string const & host, std::string const & url) {
 
     try {
 
         std::string redirection = getValue(host, url, "redirection")[0];
+        *statusCode = 301;
         if (redirection.find("301") == std::string::npos) {
 
             std::cout << "ERROR: Redirection status code can only be 301" << std::endl;

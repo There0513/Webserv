@@ -25,7 +25,7 @@ std::string     httpResponse::getPageContent() {
 
 void    httpResponse::findContentType(std::string url) {
 	_contentType = url.substr(url.rfind(".") + 1, url.size() - url.rfind("."));
-    std::cout << "_contentType: " << _contentType << std::endl;
+    // std::cout << "_contentType: " << _contentType << std::endl;
     if (request._auto == true || _contentType == "html")  // autoindex
 		_contentType = "text/html";
 	else if (_contentType == "png")
@@ -40,14 +40,14 @@ void    httpResponse::findContentType(std::string url) {
 		_contentType = "image/bmp";
 	else
 		_contentType = "text/plain";
-    std::cout << "_contentType: " << _contentType << std::endl;
+    // std::cout << "_contentType: " << _contentType << std::endl;
 }
 
             /* handle methods */
 void    httpResponse::GETMethod() {
     std::cout << "\tGET method:\n";
-            setPageContent(request.readContent());
-            findContentType(request.getUrl());
+    setPageContent(request.readContent());
+    findContentType(request.getUrl());
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
@@ -141,7 +141,7 @@ void    httpResponse::DELETEMethod() {
     else
         // _url = cf.getErrorPage(_host, "404");
         // ConfigFile * cf = request.getConfigFile();
-        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), std::to_string(request.getStatusCode())));
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), std::to_string(request.getStatusCode())));  // TO DO: EVERYWHERE LIKE HERE
     setPageContent(request.readContent());
     findContentType(request.getUrl());
 }
@@ -156,34 +156,44 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     else if (method[0] == 'D')
         DELETEMethod();
     else
-        std::cout << "not get not post not delete." << std::endl;
+        request.setStatusCode(400);
+        // std::cout << "not get not post not delete." << std::endl;
 }
 
 
     /* CGI */
-
+// if! OK -> change errorcode?!
 int     httpResponse::checkCgi() {
-    std::cout << "\t\t\tcheckCgi()\n";
     size_t  ext;
+    struct stat sb;
 
-    if (request.isCgi == true && request.getMethod() != "DELETE") {     // tmp (== true) muted to test cgi (theresa)
-        // check extension:
-        std::cout << "\n\n\t\t\t~~~~~extension: " << request.getExtension() << std::endl;
-    	execArgv = (char **)malloc(sizeof(char *) * 3);
-    	*(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
-    	*(execArgv + 2) = NULL;
-	        *(execArgv + 0) = (char *)strdup("py");
-
-        if (request.getExtension() == "py")
-	        *(execArgv + 0) = (char *)strdup("/usr/bin/python");
-        else if (request.getExtension() == "pl")
-	        *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
-        else if (request.getExtension() == "php")
-	        *(execArgv + 0) = (char *)strdup("/usr/bin/php");
-        else
-            return 0;
-        return 1;
+    if (stat(request.getUrl().c_str(), &sb) != 0) {  // path exists
+        // std::cout << "path does not exist in checkCgi\n";
+        request.setStatusCode(400);
+        return 0;
     }
+    if (sb.st_mode && S_IXUSR) { // executable
+        if (request.isCgi == true && request.getMethod() != "DELETE") {
+            execArgv = (char **)malloc(sizeof(char *) * 3);
+            *(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
+            *(execArgv + 2) = NULL;
+                *(execArgv + 0) = (char *)strdup("py");
+
+            if (request.getExtension() == "py")
+                *(execArgv + 0) = (char *)strdup("/usr/bin/python");
+            else if (request.getExtension() == "pl")
+                *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
+            else if (request.getExtension() == "php")
+                *(execArgv + 0) = (char *)strdup("/usr/bin/php");
+            else {
+                request.setStatusCode(203);
+                return 0;
+            }
+            return 1;
+        }
+    } else
+        request.setStatusCode(406);
+        // std::cout << "no executable in checkCgi\n";
     return 0;
 }
 
@@ -208,15 +218,11 @@ int httpResponse::executeCgi() {
     int     newFdOut;
 	char *emptyempty[] = { "", NULL };  // tmp find solution
     
-    // char* execArgv = "./srcs/Server/www/cgi-bin/perl.pl"; // + scriptname  | tmp
-    std::cout << "url in executeCgi = " << request.getUrl() << "\n";
+    // std::cout << "url in executeCgi = " << request.getUrl() << "\n";
     if (request.getUrl()[0] == '/')
         *(execArgv + 1) = (char *)strdup(request.getUrl().substr(1, request.getUrl().size()).c_str());
     else
         *(execArgv + 1) = (char *)strdup(request.getUrl().substr(0, request.getUrl().size()).c_str());
-
-    // get cgi location from config file    execArgv = cgiLocation/script.pl/py...
-    // check if executable exists
 
     pid = fork();
     if (!pid) {
@@ -226,7 +232,6 @@ int httpResponse::executeCgi() {
         if (newFdOut == -1)
             exit(1);
         dup2(newFdOut, STDOUT_FILENO);  // change stdin/stdout with dup2
-     
         if ((execve(execArgv[0], execArgv, _envVar)) < 0) {
             std::cout << "execve failed.\n";
             exit(1);
@@ -238,7 +243,6 @@ int httpResponse::executeCgi() {
     }
     waitpid(pid, &status, 0);
     return 1;
-    // return WEXITSTATUS(status); // Obtain exit status of a child process
 }
 
 // read 'tmp file' + set Page content

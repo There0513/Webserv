@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:53:05 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/13 22:40:00 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/27 00:30:32 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ class ConfigFile {
 
             //Useful member functions 
             std::string     findPath(std::string const & host, std::string const & url); // A function to check if the given URL exists, and if yes return the associated root            
-            std::string     checkRedirection(std::string const & host, std::string const & url); // A function to check if there is a redirection, and returns the updated url
+            std::string     checkRedirection(int *statusCode, std::string const & host, std::string const & url); // A function to check if there is a redirection, and returns the updated url
             bool            isMethodAllowed(std::string const & host, std::string const & url, std::string const & method); // A function to check if the required method is allowed
 
             //ports to open in listen mode

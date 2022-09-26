@@ -10,7 +10,7 @@
 Color::Modifier		rouge(Color::FG_RED);
 Color::Modifier		defi(Color::FG_DEFAULT);
 
-httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(0), _auto(false) {
+httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false) {
     // std::cout << "buffer in constructor request: |" << buffer << "|\n";
         parseRequest(buffer, socket);
 }
@@ -25,7 +25,6 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
 
     int start = buffer.find("\r\n\r\n");
     int end = buffer.size();
-    // std::cout << "###############################buffer: |" << buffer << "|" << std::endl;
 
     if (start != std::string::npos) {    // check if "/r/n/r/n" present
 
@@ -48,13 +47,11 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
         std::string *contentLength = getHeaderValue("Content-Length");
 
         if (val) {
-
             if (val->find("chunked") != std::string::npos)
                 buffer = decodeChunks(socket); // -> first line is hexadecimal value that tells the extraction length of the second line
         }
 
-        else if (contentLength) {
-            
+        else if (contentLength) {            
             if ((_method == "GET" || _method == "DELETE") && contentLength->compare("0") != 0)
                 std::cout << rouge << "ERROR: CONTENT LENGTH SHOULD BE 0" << defi << std::endl;
 
@@ -82,7 +79,7 @@ void    httpRequest::parseHeader(std::string buffer) {
     std::string value;
     
     if (buffer.find("\r\n") == 0)       // erase first empty line
-                buffer.erase(0, 1);
+        buffer.erase(0, 1);
     
     std::string    line = buffer.substr(0, buffer.find("\r\n"));
 
@@ -96,7 +93,7 @@ void    httpRequest::parseHeader(std::string buffer) {
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
         line = buffer.substr(0, buffer.find("\r\n"));
     }
-       // print _header:
+    // print _header:
     // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
     //     std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
 }
@@ -128,9 +125,9 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
     end = str.find("\r\n", start);
     if (end != -1)
         _version = str.substr(start, end - start);
-    std::cout << "_method: |" << _method << "|" << std::endl;
-    std::cout << "_url: |" << _url << "|" << std::endl;
-    std::cout << "_version: |" << _version << "|" << std::endl;
+    // std::cout << "_method: |" << _method << "|" << std::endl;
+    // std::cout << "_url: |" << _url << "|" << std::endl;
+    // std::cout << "_version: |" << _version << "|" << std::endl;
 }
 
 int     httpRequest::checkFirstLine() {
@@ -139,22 +136,18 @@ int     httpRequest::checkFirstLine() {
     if (_method.compare("GET") != 0 && _method.compare("POST") != 0 && _method.compare("DELETE") != 0)
     {
         std::cerr << "Error: method not valid." << std::endl;
-        std::cerr << "_method[0] = : |" << _method[0] << "|\n";
-        std::cerr << "_method[1] = : |" << _method[1] << "|\n";
-        std::cerr << "_method[2] = : |" << _method[2] << "|\n";
-        // change status code + return -1
+        _statusCode = 400; // bad request
         return -1;
     }
     
     // check url:
-    std::cout << "_url[0] = " << _url[0] << "|\n";
     if (_url[0] != '/' || _url.length() == 0) {
         _statusCode = 400; // bad request
         return -1;
     }
     
     if (_url.length() >= 256) {
-        _statusCode = 414;
+        _statusCode = 414; // "Request-URI Too Large"
         return -1;
     }
 
@@ -171,9 +164,6 @@ int     httpRequest::checkFirstLine() {
         _statusCode = 505;  // "HTTP Version not supported"
         return -1;
     }
-
-    std::cout << "\t\t\t\tcheckFirstLine OK\n";
-    
     return 1;
 }
 
@@ -185,10 +175,6 @@ void    httpRequest::setQuery() {
         _query = _url.substr(pos + 1, _url.size());
         _url = _url.substr(0, pos);
     }
-
-    std::cout << "query: |" << _query << "|\n";
-
-    std::cout << "new _url: |" << _url << "|\n";
 }
 
 /* ================================================== READ CONTENT ============================================================== */ 
@@ -281,7 +267,7 @@ std::string     httpRequest::readContent() {
 
     struct stat         s;
 
-    std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
+    // std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
 
     if (_url[0] == '/' && _url.length() > 1)
         _url = _url.substr(1, _url.length());
@@ -307,7 +293,6 @@ std::string     httpRequest::readContent() {
     
     else
             std::cerr << "\t|favicon|error: else of if(stat(_url.c_str(),&s) == 0 )\n";
-    std::cout << "|favicon|end of readContent\n";
     
     return "";
 }
@@ -450,17 +435,17 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
     try {   
 
-        if (checkFirstLine() == -1) { // if -1  -> return/send error response
+        if (checkFirstLine() == -1) {   // _statusCode changed inside functione
          
             std::cout << "ERROR: Invalid request" << std::endl;
          
             _url = cf.getErrorPage(_host, "400");
         }
 
-        if (cf.isMethodAllowed(_host, _url, _method) == false) { // check if method is allowed
+        if (cf.isMethodAllowed(_host, _url, _method) == false) {
         
             std::cout << rouge << "ERROR: Method is not allowed for this server" << defi << std::endl;
-        
+            _statusCode = 405; // "Method Not Allowed"
             _url = cf.getErrorPage(_host, "400");
         }
 
@@ -482,15 +467,14 @@ int     httpRequest::isValid(ConfigFile & cf) {
     catch (ConfigFile::ServerNotFoundException &e) {
         
         std::cout << rouge << e.what() << defi << std::endl;
-        
+        _statusCode = 400; // bad request
         _url = cf.getErrorPage(_host, "404");
     }
     catch (ConfigFile::ValueNotFoundException &e) {
        
         std::cout << rouge << e.what() << ". Check the URI of your request." << defi << std::endl;
-       
+        _statusCode = 400; // bad request
         _url = cf.getErrorPage(_host, "404");           
-       
         isCgi = false;                                    
     }
     // min/max length content --> only for POST method (?)
@@ -500,14 +484,14 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
-    std::cout << "_url beginning of handleURL: " << _url << "\n";
-    std::cout << "in handleURL  _host: " << _host << "\n";
+    // std::cout << "_url beginning of handleURL: " << _url << "\n";
+    // std::cout << "in handleURL  _host: " << _host << "\n";
     
     try {
 
         if (_url.find("error") == std::string::npos) {
          
-            _url = cf.checkRedirection(_host, _url); // check if there is a redirection
+            _url = cf.checkRedirection(&_statusCode, _host, _url); // check if there is a redirection
          
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
         }
@@ -521,7 +505,7 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
         std::cout << rouge << e.what() << defi << std::endl;
     }
 
-    std::cout << "_url end of handleURL: " << _url << "\n";
+    // std::cout << "_url end of handleURL: " << _url << "\n";
 }
 
 /* ======================================= SETTERS - GETTERS ===========================================================*/

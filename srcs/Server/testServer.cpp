@@ -1,6 +1,7 @@
 #include "testServer.hpp"
 #include "../Request/httpRequest.hpp"
 #include "../Response/httpResponse.hpp"
+#include "../utils/utils.cpp"
 #include <fcntl.h>
 
 HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
@@ -112,7 +113,7 @@ void    HDE::testServer::responder() {
 }
 
 void    HDE::testServer::deal_with_data(int listnum) {
-    httpResponse        response;
+    // httpResponse        response;
 
     // while ((_ret = read(connectList[listnum], buffer, 3000000)) >= 0) {
         // cp _ret bites into a buffer 
@@ -152,10 +153,9 @@ void    HDE::testServer::deal_with_data(int listnum) {
                     // set redirection status code
                     // create response (page content + content type)
                 // else -> handle method-function (GET, POST, DELETE):
-                response.request = request;
-                response.methodHandler(_ConfigFile, request.getMethod());
-                // recheck valid status code TO DO
-                handleResponse(response.getPageContent(), response.getContentType(), connectList[listnum]);
+                _response.request = request;
+                _response.methodHandler(_ConfigFile, request.getMethod());
+                handleResponse(_response.getPageContent(), _response.getContentType(), connectList[listnum]);
                 reqString = "";
                 _requestVec.clear();
             }
@@ -177,12 +177,16 @@ int     HDE::testServer::endOfFile(std::string reqString) {
 }
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
-    std::string answer = "HTTP/1.1 200test OK\nContent-Type: "; // To do: replace version + status code
-    answer+= contentType;
-    answer+= "; charset=UTF-8\nContent-Length:";
-    answer+= std::to_string(content.length());
-    answer+= "\n\n";
-    answer+= content;
+    httpRequest req = _response.request;
+    std::string answer = req.getVersion() + " ";
+    answer += std::to_string(req.getStatusCode()) + " ";
+    answer += StatusCodeInit(req.getStatusCode()) + "\n Content-Type: ";
+    answer += contentType;
+    answer += "; charset=UTF-8\nContent-Length:";
+    answer += std::to_string(content.length());
+    answer += "\nDate: " + getDate();
+    answer += "\n\n";
+    answer += content;
 
     std::cout << "answer = \n[" << answer << "]\n" << std::endl;
     write(connectListSocket, answer.c_str(), answer.size());
