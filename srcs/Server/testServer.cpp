@@ -113,8 +113,6 @@ void    HDE::testServer::responder() {
 }
 
 void    HDE::testServer::deal_with_data(int listnum) {
-    // httpResponse        response;
-
     // while ((_ret = read(connectList[listnum], buffer, 3000000)) >= 0) {
         // cp _ret bites into a buffer 
         // example: new char[3000000];
@@ -132,6 +130,11 @@ void    HDE::testServer::deal_with_data(int listnum) {
         close(connectList[listnum]);
         connectList[listnum] = 0;
     }
+    else if (_ret == 0) {
+        std::cout << "Connexion closed" << std::endl;
+        close(connectList[listnum]);
+        connectList[listnum] = 0;
+    }
     else {
         buffer[_ret] = '\0';
         for (int i = 0; i < _ret; i++)
@@ -142,7 +145,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
         if (reqString.find("\r\n\r\n") == std::string::npos && reqString.find("----WebKitFormBoundary") == std::string::npos) {
             // std::cout << "\t\tWAIT for next line in telnet\n";
         }
-        else if (reqString.find("----WebKitFormBoundary") != std::string::npos && endOfFile(reqString) != 1){       // wait till end of request
+        else if (reqString.find("----WebKitFormBoundary") != std::string::npos && endOfFile(reqString) != 1){       // wait till end of request during upload
             // std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
         }
         else {

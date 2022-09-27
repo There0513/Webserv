@@ -1,3 +1,12 @@
 Content-type:text/html
 
-<!DOCTYPE html><body><link rel="icon" href="data:,"> <center><h1>Test Post with php</h1><center><h1>no name given.</h1>    Bonjour, </body></html>
+
+<!DOCTYPE html>
+<body>
+<link rel="icon" href="data:,"> 
+<center>
+<h1>Coucou 
+</h1>
+<center>
+</body>
+</html>

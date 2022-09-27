@@ -141,7 +141,7 @@ void    httpResponse::DELETEMethod() {
     else
         // _url = cf.getErrorPage(_host, "404");
         // ConfigFile * cf = request.getConfigFile();
-        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), std::to_string(request.getStatusCode())));  // TO DO: EVERYWHERE LIKE HERE
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
     setPageContent(request.readContent());
     findContentType(request.getUrl());
 }
@@ -155,9 +155,10 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
         POSTMethod(cf);
     else if (method[0] == 'D')
         DELETEMethod();
-    else
+    else {
         request.setStatusCode(400);
-        // std::cout << "not get not post not delete." << std::endl;
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+    }
 }
 
 
@@ -170,6 +171,7 @@ int     httpResponse::checkCgi() {
     if (stat(request.getUrl().c_str(), &sb) != 0) {  // path exists
         // std::cout << "path does not exist in checkCgi\n";
         request.setStatusCode(400);
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
         return 0;
     }
     if (sb.st_mode && S_IXUSR) { // executable
@@ -187,12 +189,14 @@ int     httpResponse::checkCgi() {
                 *(execArgv + 0) = (char *)strdup("/usr/bin/php");
             else {
                 request.setStatusCode(203);
+                request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
                 return 0;
             }
             return 1;
         }
     } else
         request.setStatusCode(406);
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
         // std::cout << "no executable in checkCgi\n";
     return 0;
 }
@@ -239,6 +243,7 @@ int httpResponse::executeCgi() {
     }
     else if (pid < 0) {
         request.setStatusCode(500);
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
         return -1;
     }
     waitpid(pid, &status, 0);
