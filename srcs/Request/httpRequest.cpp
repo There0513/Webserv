@@ -13,6 +13,7 @@ Color::Modifier		defi(Color::FG_DEFAULT);
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false) {
     // std::cout << "buffer in constructor request: |" << buffer << "|\n";
         parseRequest(buffer, socket);
+        std::cout << "end request _url: " << _url << "\n\n\n";
 }
 
 httpRequest::httpRequest(void) {}
@@ -51,7 +52,8 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
                 buffer = decodeChunks(socket); // -> first line is hexadecimal value that tells the extraction length of the second line
         }
 
-        else if (contentLength) {            
+        else if (contentLength) {     
+            std::cout << "~~~~~~~~~~~~~~\n\n";       
             if ((_method == "GET" || _method == "DELETE") && contentLength->compare("0") != 0)
                 std::cout << rouge << "ERROR: CONTENT LENGTH SHOULD BE 0" << defi << std::endl;
 
@@ -94,8 +96,8 @@ void    httpRequest::parseHeader(std::string buffer) {
         line = buffer.substr(0, buffer.find("\r\n"));
     }
     // print _header:
-    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
-    //     std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
+    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
+        std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
 }
 
 void    httpRequest::parseBody(std::string *contentLength) {  // already set in parseRequest
@@ -125,9 +127,9 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
     end = str.find("\r\n", start);
     if (end != -1)
         _version = str.substr(start, end - start);
-    // std::cout << "_method: |" << _method << "|" << std::endl;
-    // std::cout << "_url: |" << _url << "|" << std::endl;
-    // std::cout << "_version: |" << _version << "|" << std::endl;
+    std::cout << "_method: |" << _method << "|" << std::endl;
+    std::cout << "_url: |" << _url << "|" << std::endl;
+    std::cout << "_version: |" << _version << "|" << std::endl;
 }
 
 int     httpRequest::checkFirstLine() {
@@ -267,7 +269,7 @@ std::string     httpRequest::readContent() {
 
     struct stat         s;
 
-    // std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
+    std::cout << "\t\t\t_url beginn of readContent(): " << _url << std::endl;
 
     if (_url[0] == '/' && _url.length() > 1)
         _url = _url.substr(1, _url.length());

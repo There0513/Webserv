@@ -52,8 +52,36 @@ void    httpResponse::GETMethod() {
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    httpResponse::POSTMethod(ConfigFile * cf) {
-    std::cout << "\tPOSTmethod:\n";
-
+    std::cout << "\tPOSTmethod: request.getHost(): "<<request.getHost() << "\n";
+    std::cout << "request.getHeaderValue(Content-length): " << *request.getHeaderValue("Content-length:");
+    try
+    {
+        std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
+        std::cout << "max_size: " << max_size << std::endl;
+        if (max_size.size() < (*request.getHeaderValue("Content-length:")).size()) {
+            // error
+            request.setStatusCode(413);
+            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+        }
+        else if (max_size.size() == (*request.getHeaderValue("Content-length:")).size())
+        {
+            for (int i = 0; i < (int)max_size.size(); i++)
+            {
+                if (max_size.at(i) > (*request.getHeaderValue("Content-length:")).at(i))
+                    break ;
+                else if (max_size.at(i) < (*request.getHeaderValue("Content-length:")).at(i))
+                {
+                    request.setStatusCode(413);
+                    request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+                }
+            }
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cout << "no max_size given - all ok\n";
+    }
+    
     // check if upload:
     if (request.getHeaderValue("Content-Disposition:"))
         POSTUploads(cf);
@@ -147,6 +175,8 @@ void    httpResponse::DELETEMethod() {
 }
 
 void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
+    std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
+    std::cout << "\tmethod[0]: " << method[0] << std::endl;
     if (checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
@@ -156,48 +186,44 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     else if (method[0] == 'D')
         DELETEMethod();
     else {
+        std::cout << "else\n";
         request.setStatusCode(400);
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
     }
+    std::cout << "\tend of methodHandler_url: " << request.getUrl() << "\n";
 }
 
 
     /* CGI */
-// if! OK -> change errorcode?!
 int     httpResponse::checkCgi() {
     size_t  ext;
     struct stat sb;
 
-    if (stat(request.getUrl().c_str(), &sb) != 0) {  // path exists
-        // std::cout << "path does not exist in checkCgi\n";
-        request.setStatusCode(400);
-        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
-        return 0;
-    }
-    if (sb.st_mode && S_IXUSR) { // executable
-        if (request.isCgi == true && request.getMethod() != "DELETE") {
-            execArgv = (char **)malloc(sizeof(char *) * 3);
-            *(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
-            *(execArgv + 2) = NULL;
-                *(execArgv + 0) = (char *)strdup("py");
-
-            if (request.getExtension() == "py")
-                *(execArgv + 0) = (char *)strdup("/usr/bin/python");
-            else if (request.getExtension() == "pl")
-                *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
-            else if (request.getExtension() == "php")
-                *(execArgv + 0) = (char *)strdup("/usr/bin/php");
-            else {
-                request.setStatusCode(203);
-                request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
-                return 0;
-            }
-            return 1;
+    if (request.isCgi == true && request.getMethod() != "DELETE") {
+        if (stat(request.getUrl().c_str(), &sb) != 0) {  // path exists
+            std::cout << "path does not exist in checkCgi\n";
+            request.setStatusCode(400);
+            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+            return 0;
         }
-    } else
-        request.setStatusCode(406);
-        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
-        // std::cout << "no executable in checkCgi\n";
+        execArgv = (char **)malloc(sizeof(char *) * 3);
+        *(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
+        *(execArgv + 2) = NULL;
+            *(execArgv + 0) = (char *)strdup("py");
+
+        if (request.getExtension() == "py")
+            *(execArgv + 0) = (char *)strdup("/usr/bin/python");
+        else if (request.getExtension() == "pl")
+            *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
+        else if (request.getExtension() == "php")
+            *(execArgv + 0) = (char *)strdup("/usr/bin/php");
+        else {
+            request.setStatusCode(203);
+            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
+            return 0;
+        }
+        return 1;
+    }
     return 0;
 }
 

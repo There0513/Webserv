@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/27 00:54:31 by threiss          ###   ########.fr       */
+/*   Updated: 2022/09/27 20:57:37 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,13 +239,19 @@ std::string     ConfigFile::checkRedirection(int *statusCode, std::string const 
 }
 
 std::string     ConfigFile::getErrorPage(std::string const & host, std::string const & error) {
+    std::cout << "getErrorPage error: " << error << "\n";
 
     try {
 
         std::vector<std::string> errorPage = getValue(host, "", "error_page");
-        std::vector<std::string>::reverse_iterator rit = std::find(errorPage.rbegin(), errorPage.rend(), error);
-        if (rit != errorPage.rend())
-            return ("srcs/Server/www/errorPages" + *rit);
+        std::vector<std::string>::iterator it = errorPage.begin();
+        for (;it != errorPage.end(); it++) {
+            if (it->find(error) != std::string::npos){
+                // std::cout << "srcs/Server/www/errorPages + *it = |" << "srcs/Server/www/errorPages" + *it << std::endl;
+                return ("srcs/Server/www/errorPages" + *it);
+            }
+        }
+
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         std::cout << red << e.what() << def << std::endl;
