@@ -3,5 +3,5 @@ Host: localhost:8082
 User-Agent: custom-client
 Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
 Connection: Keep-Alive
-Content-length: 1001
+Content-Length: 1001
 Content-type: text/html

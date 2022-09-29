@@ -151,9 +151,9 @@ void    HDE::testServer::deal_with_data(int listnum) {
         else {
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
             if (request.isValid(*_ConfigFile) != -1) {
-                // std::cout << "\tbefore handleURL_url: " << request.getUrl() << "\n";
+                std::cout << "\tbefore handleURL_url: " << request.getUrl() << "\n";
                 request.handleURL(*_ConfigFile);
-                // std::cout << "\tafter handleURL_url: " << request.getUrl() << "\n";
+                std::cout << "\tafter handleURL_url: " << request.getUrl() << "\n";
                 // if redirection configured
                     // set redirection status code
                     // create response (page content + content type)

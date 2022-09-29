@@ -494,8 +494,32 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
         if (_url.find("error") == std::string::npos) {
          
             _url = cf.checkRedirection(&_statusCode, _host, _url); // check if there is a redirection
-         
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
+            // check if file or directory - else: set error page:
+            std::string path = getenv("PWD");
+
+            struct stat         s;
+
+            // std::cout << "@@@@@@@@@@@@@@path + / + _url: " << path + "/" + _url << std::endl;
+            if (stat((path + "/" + _url).c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
+            {
+                if (s.st_mode & S_IFDIR) {
+                    std::cerr << "~it's a directory\n";
+                }
+                else if (s.st_mode & S_IFREG) {
+                    std::cerr << "~it's a file\n";
+                }
+                else {
+                    _statusCode = 404;
+                    _url = cf.getErrorPage(_host, "404");
+                }
+            }
+            else {
+                _statusCode = 404;
+                _url = cf.getErrorPage(_host, "404");
+            }
+
+
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
