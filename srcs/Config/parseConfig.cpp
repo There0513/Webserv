@@ -12,6 +12,7 @@
 
 #include "parseConfig.hpp"
 #include "colormod.hpp"
+#include "../Response/httpResponse.hpp"
 
 Color::Modifier		red(Color::FG_RED);
 Color::Modifier		cyan(Color::FG_CYAN);
@@ -45,15 +46,15 @@ ConfigFile::ConfigFile(std::string const & configFile) {
             _inSection = trim(line.substr(1, line.find(']') -1));
 
             if (!_inSection.compare("server")) {
-                _inSection.assign("server" + std::to_string(++flag));
+                _inSection.assign("server" + to_string(++flag));
                 _nbVirtualHosts++;
             }
 
             else if (!_inSection.compare("location/")) 
-                _inSection.assign("server" + std::to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
+                _inSection.assign("server" + to_string(flag) + "/" + _inSection.substr(0, _inSection.find("/")));
 
             else if (!strncmp(_inSection.c_str(), "location/", 9))
-                _inSection.assign("server" + std::to_string(flag) + "/" + _inSection);
+                _inSection.assign("server" + to_string(flag) + "/" + _inSection);
 
             else {
 
@@ -134,7 +135,7 @@ std::vector<std::string> const & ConfigFile::getValue(std::string const & port, 
 // GET PORTS TO OPEN IN LISTEN MODE
 void    ConfigFile::getPorts() {
 
-    std::map<std::string, std::vector<std::string>>::iterator   it = _content.begin();
+    std::map<std::string, std::vector<std::string> >::iterator   it = _content.begin();
 
     for (; it != _content.end(); it++) {
         if (it->first.find("listen") != std::string::npos) {
@@ -151,15 +152,19 @@ void    ConfigFile::getPorts() {
 // FIND PATH TO THE FILES INSIDE THE SERVER 
 std::string     ConfigFile::findPath(std::string const & port, std::string const & url) {
 
+    if (url.find("http") != std::string::npos)
+        return url;
+
     try {
-    std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
-    std::cout << "\t\turl: " << url << "\n\n\n";
+
+        std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
+        std::cout << "\t\turl: " << url << "\n\n\n";
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
             std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
             return (root + checkIndex(port, url, root));
-    }
+        }
         else {
             std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
             std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
@@ -452,8 +457,20 @@ bool    ConfigFile::checkDirective(std::string dir) {
     if (dir.find("location") != std::string::npos)
         dir.substr(dir.find_last_of("/"), dir.length());
 
-    std::vector<std::string>    listOfDir =
-    {"listen", "server_name", "root", "error_page", "client_max_body_size", "index", "autoindex", "cgi", "authorized_methods", "upload_path", "redirection"};
+    std::vector<std::string>    listOfDir;
+    listOfDir.reserve( 11 );
+
+    listOfDir.push_back("listen");
+    listOfDir.push_back("server_name");
+    listOfDir.push_back("root");
+    listOfDir.push_back("error_page");
+    listOfDir.push_back("client_max_body_size");
+    listOfDir.push_back("index");
+    listOfDir.push_back("autoindex");
+    listOfDir.push_back("cgi");
+    listOfDir.push_back("authorized_methods");
+    listOfDir.push_back("upload_path");
+    listOfDir.push_back("redirection");
 
     if (std::find(listOfDir.begin(), listOfDir.end(), dir) != listOfDir.end())
         return true;
@@ -470,7 +487,8 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     try {
         indexList = getValue(host, url, "index");
         for (it = indexList.begin(); it != indexList.end(); it++) {
-            data.open(root + "/" + *it);
+            std::string openContent = root + "/" + *it;
+            data.open(openContent.c_str());
             if (data) 
                 return ("/" + *it);
         }

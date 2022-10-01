@@ -12,6 +12,7 @@ Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(0), _auto(false) {
     // std::cout << "buffer in constructor request: |" << buffer << "|\n";
+        isCgi = false;
         parseRequest(buffer, socket);
 }
 
@@ -23,7 +24,7 @@ httpRequest::~httpRequest() {}
 
 void    httpRequest::parseRequest(std::string buffer, long socket) {
 
-    int start = buffer.find("\r\n\r\n");
+    size_t start = buffer.find("\r\n\r\n");
     int end = buffer.size();
     // std::cout << "###############################buffer: |" << buffer << "|" << std::endl;
 
@@ -105,7 +106,7 @@ void    httpRequest::parseBody(std::string *contentLength) {  // already set in 
     
     // std::cout << "_body: |" << _body << "|" << std::endl;
 
-    int len = stoi(*contentLength);
+    size_t len = atoi((*contentLength).c_str());
 
     if (_body.length() != len) // if 'Content-Length' != body length, fill with NULLS or truncate to len
         _body.resize(len, '\0'); 
@@ -245,7 +246,7 @@ std::string         httpRequest::readDirectoryAutoindex() {
     
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
         page += "\t\t<li><a style=\"text-decoration: none;color:black;\" href=" + dirName + "/" + std::string(dirEntry->d_name)\
-                + "\><strong>" + std::string(dirEntry->d_name) + "</strong></a></li>\n";
+                + "/><strong>" + std::string(dirEntry->d_name) + "</strong></a></li>\n";
     
     page +="</ul>\n</body>\n</html>\n";
     
@@ -261,12 +262,12 @@ std::string     httpRequest::readFileContent() {
     std::ifstream       data;
     std::ostringstream  buffer;
 
-    data.open(_url);
+    data.open(_url.c_str());
     
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
         _url = "srcs/Server/www/errorPages/404notfound.html";
-        data.open(_url);
+        data.open(_url.c_str());
     }
     
     buffer << data.rdbuf();  // reading data
@@ -542,7 +543,7 @@ std::string httpRequest::getVersion() {
 
 void    httpRequest::setHost(std::string buffer) {
     // get the Host of the request
-    int start = buffer.find_first_of(":") + 2;
+    size_t start = buffer.find_first_of(":") + 2;
     
     if ((start != std::string::npos)) {
         

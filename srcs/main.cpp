@@ -17,7 +17,7 @@ void    printMapConfig(ConfigFile cf) {
     std::map<std::string, std::vector<std::string> > mapConfig = cf.getMap();
     std::map<std::string, std::vector<std::string> >::iterator it = mapConfig.begin();
 
-    int count = 0;
+    // int count = 0;
 
     for (; it != mapConfig.end(); it++) {
         // if (it->first.find("listen") != std::string::npos) {

@@ -108,7 +108,7 @@ void    httpResponse::DELETEMethod() {
     else
         // _url = cf.getErrorPage(_host, "404");
         // ConfigFile * cf = request.getConfigFile();
-        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), std::to_string(request.getStatusCode())));
+        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), to_string(request.getStatusCode())));
     setPageContent(request.readContent());
     findContentType(request.getUrl());
 }
@@ -131,7 +131,6 @@ void        httpResponse::methodHandler(std::string method) {
 
 int     httpResponse::checkCgi() {
     std::cout << "\t\t\tcheckCgi()\n";
-    size_t  ext;
 
     if (request.isCgi == true && request.getMethod() != "DELETE") {     // tmp (== true) muted to test cgi (theresa)
         // check extension:
@@ -159,7 +158,6 @@ void    httpResponse::handleCgi() {
     handleCgiFile();
 }
 
-
 /* unistd.h
     Standard file descriptors.
 #define	STDIN_FILENO	0	Standard input.
@@ -170,10 +168,10 @@ void    httpResponse::handleCgi() {
 // execve 3 arguments: the path to the program, a pointer to a null-terminated array of argument strings, and a pointer to a null-terminated array of environment variable strings
 // execve arg[0] = cgi-bin binary arg[1] = cgi-bin script executable arg[2] = NULL
 int httpResponse::executeCgi() {
+
     pid_t   pid;
     int     status;
     int     newFdOut;
-	char *emptyempty[] = { "", NULL };  // tmp find solution
     
     // char* execArgv = "./srcs/Server/www/cgi-bin/perl.pl"; // + scriptname  | tmp
     std::cout << "url in executeCgi = " << request.getUrl() << "\n";

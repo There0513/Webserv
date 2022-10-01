@@ -2,6 +2,7 @@
 # define HTTPRESPONSE_HPP
 # include "../Request/httpRequest.hpp"
 # include <iostream>
+# include <sstream>
 # include <map>
 # include <vector>
 
@@ -39,6 +40,20 @@ class   httpResponse
 
         void        setContentType(std::string type);
         std::string getContentType();
+
 };
+
+template <typename T>
+std::string to_string(T value)
+{
+    //create an output string stream
+    std::ostringstream os ;
+
+    //throw the value into the string stream
+    os << value ;
+
+    //convert the string stream into a string and return
+    return os.str() ;
+}
 
 #endif

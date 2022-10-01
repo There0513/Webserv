@@ -39,12 +39,11 @@ void    HDE::testServer::launch() {
     ex: if fd 4 was originally in the fd set and then it became readable, the fd set contains fd 4 in it */
 
 void    HDE::testServer::accepter() {
-    struct timeval  timeout; // timeout for select()
+
     int readSocks;          // nb of sockets ready for reading
 
     buildSelectList();
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
+
     readSocks = select(highSocket + 1, &socks, (fd_set *) 0, (fd_set *) 0, NULL);
 
     if (readSocks < 0) {
@@ -65,7 +64,7 @@ void    HDE::testServer::accepter() {
 
 void    HDE::testServer::handler() {
 
-    for (int i = 0; i < getSocket().size(); i++) {
+    for (size_t i = 0; i < getSocket().size(); i++) {
         
         if (FD_ISSET(getSocket()[i]->getsock(), &socks))
             handle_new_connections(getSocket()[i]);
@@ -145,20 +144,20 @@ void    HDE::testServer::deal_with_data(int listnum) {
         else {
             // std::cout << "\t\tfound \tELSE of if (reqString.find(\"rnrn\") == std::string::npos)\n";
 
-            // std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
-            //             Host: localhost:8080\n \
-            //             User-Agent: custom-client\n \
-            //             Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
-            //             Connection: Keep-Alive\n \
-            //             \r\n\r\n";
-            // std::string buf = "POST /forms HTTP/1.1\r\n \
-            //         Host: localhost:8080 \
-            //         User-Agent: custom-client \
-            //         Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
-            //         Connection: Keep-Alive \
-            //         Content-length: 17 \
-            //         Content-type: text/html\n \
-            //         \r\n\r\n";
+            /*std::string buf = "DELETE /delete/deleteme.html HTTP/1.1\r\n \
+                         Host: localhost:8080\n \
+                         User-Agent: custom-client\n \
+                         Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5\n \
+                         Connection: Keep-Alive\n \
+                         \r\n\r\n";*/
+            /* std::string buf = "POST /forms HTTP/1.1\r\n \
+                     Host: localhost:8080 \
+                     User-Agent: custom-client \
+                     Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5 \
+                     Connection: Keep-Alive \
+                     Content-length: 17 \
+                     Content-type: text/html\n \
+                     \r\n\r\n";*/
             // std::cout << "\tdeal_with_data/else before httpRequest  listnum: " << listnum << "\n\n";
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
             // httpRequest request(buf, connectList[listnum]);    // parse request-string into 'httpRequest request'
@@ -183,7 +182,7 @@ void    HDE::testServer::handleResponse(std::string content, std::string content
     std::string answer = "HTTP/1.1 200test OK\nContent-Type: "; // To do: replace version + status code
     answer+= contentType;
     answer+= "; charset=UTF-8\nContent-Length:";
-    answer+= std::to_string(content.length());
+    answer+= to_string(content.length());
     answer+= "\n\n";
     answer+= content;
 
@@ -202,7 +201,7 @@ void    HDE::testServer::buildSelectList() {
 
 /* FD_SET() adds the fd sock to the fd set so that select() will return if a connection comes in on that socket */
 
-    for (int i = 0; i != getSocket().size(); i++)
+    for (size_t i = 0; i != getSocket().size(); i++)
         FD_SET(getSocket()[i]->getsock(), &socks);
 
 /* Loop through all the possible connections and add those to the fd set */

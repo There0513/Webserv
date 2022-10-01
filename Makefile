@@ -11,9 +11,9 @@ SRCS	=	srcs/main.cpp\
 
 OBJS	=	${SRCS:.c=.o}
 
-CXX		=	g++#c++
+CXX		=	g++
 
-CFLAGS	=	-std=c++11#-Wall -Werror -Wextra #-std=c++98
+CFLAGS	=	-Wall -Werror -Wextra -std=c++98
 
 NAME	=	webserv
 

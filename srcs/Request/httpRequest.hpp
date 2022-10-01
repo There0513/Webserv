@@ -49,7 +49,7 @@ class httpRequest
         void            parseBody(std::string *contentLength);
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);
-        bool            isCgi = false;
+        bool            isCgi;
 
 /* SETTERS - GETTERS */
 

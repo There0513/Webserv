@@ -23,8 +23,8 @@ namespace HDE {
     class testServer : public SimpleServer {
 
         private:
-            char    buffer[30000] = {0};
-            std::vector<char>   _requestVec = {0};
+            char    buffer[30000];
+            std::vector<char>   _requestVec;
             int     newSocket;
             int     _ret;
             void    accepter();
