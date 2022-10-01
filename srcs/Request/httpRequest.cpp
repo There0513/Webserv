@@ -480,10 +480,6 @@ int     httpRequest::isValid(ConfigFile & cf) {
                 _url = cf.getErrorPage(_host, "404");
             }
         }
-        else {
-            _statusCode = 400; // bad request
-            _url = cf.getErrorPage(_host, "404");
-        }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         
