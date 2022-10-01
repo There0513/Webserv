@@ -178,7 +178,7 @@ void    httpResponse::DELETEMethod() {
 void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
     std::cout << "\tmethod[0]: " << method[0] << std::endl;
-    if (checkCgi() == 1)
+    if (request.getStatusCode() < 400 && checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
         GETMethod();
@@ -301,7 +301,6 @@ void    httpResponse::handleCgiFile() {
 void    httpResponse::createEnvVar() {
     std::map<std::string, std::string>  _env;
   
-  // tmp values:
     if (request.getHeaderValue("content-length"))
         _env["CONTENT_LENGTH"] = request.getHeaderValue("content-length")->c_str();
     else
@@ -311,7 +310,7 @@ void    httpResponse::createEnvVar() {
     _env["REDIRECT_STATUS"] = request.getStatusCode();
     _env["REQUEST_METHOD"] = request.getMethod().c_str();
     _env["QUERY_STRING"] = request.getBody().c_str();   // ex.: "first=Anna&last=REISS"
-    _env["SCRIPT_NAME"] = "srcs/Server/www/cgi-bin/python.py";
+    _env["SCRIPT_NAME"] = "srcs/Server/www/cgi-bin/";
     _env["SERVER_NAME"] = "0";
     _env["SERVER_PORT"] = request.getHost().c_str();
     _env["SERVER_PROTOCOL"] = request.getVersion().c_str();

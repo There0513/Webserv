@@ -464,11 +464,10 @@ int     httpRequest::isValid(ConfigFile & cf) {
             
             std::vector<std::string> cgi = cf.getValue(_host, "", "cgi");
             std::vector<std::string>::iterator itbeg = cgi.begin();
-
-// .py:/usr/bin/python
+            
             size_t  pos;
-            for (; itbeg != cgi.end(); itbeg++) {
-                std::cout << "\n+\t" << itbeg->c_str() << std::endl;
+            for (; itbeg != cgi.end(); itbeg++) { // .py:/usr/bin/python
+                // std::cout << "\n+\t" << itbeg->c_str() << std::endl;
                 if (itbeg->find(_extension) != std::string::npos) {
                     pos = itbeg->find_first_of(":");
                     _execArgExtension = itbeg->substr(pos + 1, itbeg->size());
@@ -476,6 +475,14 @@ int     httpRequest::isValid(ConfigFile & cf) {
                 }
             }
             isCgi = true;
+            if (_execArgExtension == "") {
+                _statusCode = 400; // bad request
+                _url = cf.getErrorPage(_host, "404");
+            }
+        }
+        else {
+            _statusCode = 400; // bad request
+            _url = cf.getErrorPage(_host, "404");
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
