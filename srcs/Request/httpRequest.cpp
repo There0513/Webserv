@@ -498,28 +498,31 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
             // check if file or directory - else: set error page:
             std::string path = getenv("PWD");
+            // std::cout << "######################_url inside handleURL: " << _url << "\n";
+            // std::cout << "_statusCode: "<< _statusCode << std::endl;
 
-            struct stat         s;
+            if (_url.find("http") == std::string::npos) {   // == no redirection to ex: https://42.fr
+                struct stat         s;
 
-            // std::cout << "@@@@@@@@@@@@@@path + / + _url: " << path + "/" + _url << std::endl;
-            if (stat((path + "/" + _url).c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
-            {
-                if (s.st_mode & S_IFDIR) {
-                    std::cerr << "~it's a directory\n";
-                }
-                else if (s.st_mode & S_IFREG) {
-                    std::cerr << "~it's a file\n";
+                // std::cout << "@@@@@@@@@@@@@@path + / + _url: " << path + "/" + _url << std::endl;
+                if (stat((path + "/" + _url).c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
+                {
+                    if (s.st_mode & S_IFDIR) {
+                        std::cerr << "~it's a directory\n";
+                    }
+                    else if (s.st_mode & S_IFREG) {
+                        std::cerr << "~it's a file\n";
+                    }
+                    else {
+                        _statusCode = 404;
+                        _url = cf.getErrorPage(_host, "404");
+                    }
                 }
                 else {
                     _statusCode = 404;
                     _url = cf.getErrorPage(_host, "404");
                 }
             }
-            else {
-                _statusCode = 404;
-                _url = cf.getErrorPage(_host, "404");
-            }
-
 
         }
     }
