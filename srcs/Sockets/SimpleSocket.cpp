@@ -10,6 +10,14 @@ HDE::SimpleSocket::SimpleSocket(int domain, int service, int protocol, int port,
     //Establish socket
     sock = socket(domain, service, protocol);
     testConnection(sock);
+    int reuse = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+        perror("setsockopt(SO_REUSEADDR) failed");
+
+    #ifdef SO_REUSEPORT
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0) 
+            perror("setsockopt(SO_REUSEPORT) failed");
+    #endif
 }
 
 void    HDE::SimpleSocket::testConnection(int itemToTest) {

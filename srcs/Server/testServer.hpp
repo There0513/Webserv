@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   testServer.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/26 18:20:54 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/01 20:43:47 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ namespace HDE {
     class testServer : public SimpleServer {
 
         private:
-            char    buffer[3000001] = {0};
-            std::vector<char>   _requestVec = {0};
+            char    buffer[3000001];
+            std::vector<char>   _requestVec;
             int     newSocket;
             int     _ret;
             void    accepter();

@@ -197,7 +197,6 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
 
     /* CGI */
 int     httpResponse::checkCgi() {
-    size_t  ext;
     struct stat sb;
 
     if (request.isCgi == true && request.getMethod() != "DELETE") {
@@ -233,7 +232,6 @@ void    httpResponse::handleCgi() {
     handleCgiFile();
 }
 
-
 /* unistd.h
     Standard file descriptors.
 #define	STDIN_FILENO	0	Standard input.
@@ -244,10 +242,10 @@ void    httpResponse::handleCgi() {
 // execve 3 arguments: the path to the program, a pointer to a null-terminated array of argument strings, and a pointer to a null-terminated array of environment variable strings
 // execve arg[0] = cgi-bin binary arg[1] = cgi-bin script executable arg[2] = NULL
 int httpResponse::executeCgi() {
+
     pid_t   pid;
     int     status;
     int     newFdOut;
-	char *emptyempty[] = { "", NULL };  // tmp find solution
     
     // std::cout << "url in executeCgi = " << request.getUrl() << "\n";
     if (request.getUrl()[0] == '/')

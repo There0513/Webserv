@@ -39,12 +39,11 @@ void    HDE::testServer::launch() {
     ex: if fd 4 was originally in the fd set and then it became readable, the fd set contains fd 4 in it */
 
 void    HDE::testServer::accepter() {
-    struct timeval  timeout; // timeout for select()
+
     int readSocks;          // nb of sockets ready for reading
 
     buildSelectList();
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
+
     readSocks = select(highSocket + 1, &socks, (fd_set *) 0, (fd_set *) 0, NULL);
 
     if (readSocks < 0) {
@@ -65,7 +64,7 @@ void    HDE::testServer::accepter() {
 
 void    HDE::testServer::handler() {
 
-    for (int i = 0; i < getSocket().size(); i++) {
+    for (size_t i = 0; i < getSocket().size(); i++) {
         
         if (FD_ISSET(getSocket()[i]->getsock(), &socks))
             handle_new_connections(getSocket()[i]);
@@ -187,11 +186,11 @@ int     HDE::testServer::endOfFile(std::string reqString) {
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
     httpRequest req = _response.request;
     std::string answer = req.getVersion() + " ";
-    answer += std::to_string(req.getStatusCode()) + " ";
+    answer += to_string(req.getStatusCode()) + " ";
     answer += StatusCodeInit(req.getStatusCode()) + "\n Content-Type: ";
     answer += contentType;
     answer += "; charset=UTF-8\nContent-Length:";
-    answer += std::to_string(content.length());
+    answer += to_string(content.length());
     answer += "\nDate: " + getDate();
     answer += "\n\n";
     answer += content;
@@ -211,7 +210,7 @@ void    HDE::testServer::buildSelectList() {
 
 /* FD_SET() adds the fd sock to the fd set so that select() will return if a connection comes in on that socket */
 
-    for (int i = 0; i != getSocket().size(); i++)
+    for (size_t i = 0; i != getSocket().size(); i++)
         FD_SET(getSocket()[i]->getsock(), &socks);
 
 /* Loop through all the possible connections and add those to the fd set */
