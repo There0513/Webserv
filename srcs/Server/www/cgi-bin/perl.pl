@@ -13,7 +13,6 @@ print '<h1>Welcome<h1>';
 print '<h2>perl.pl script</h2>';
 print '<center>';
 print '<div>';
-print '<a href="../forms/CgiPostWithNameForm.html">try another cgi script here</a>';
 print '</div>';
 print '</body>';
 print '</html>';

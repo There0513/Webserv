@@ -462,8 +462,19 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
         if (_extension == "py" || _extension == "pl" || _extension == "php") {
             
-            cf.getValue(_host, "", "cgi");
-            
+            std::vector<std::string> cgi = cf.getValue(_host, "", "cgi");
+            std::vector<std::string>::iterator itbeg = cgi.begin();
+
+// .py:/usr/bin/python
+            size_t  pos;
+            for (; itbeg != cgi.end(); itbeg++) {
+                std::cout << "\n+\t" << itbeg->c_str() << std::endl;
+                if (itbeg->find(_extension) != std::string::npos) {
+                    pos = itbeg->find_first_of(":");
+                    _execArgExtension = itbeg->substr(pos + 1, itbeg->size());
+                    // std::cout << "_execArgExtension: " << _execArgExtension << std::endl;
+                }
+            }
             isCgi = true;
         }
     }
@@ -581,6 +592,11 @@ std::string httpRequest::getBody() {
 std::string httpRequest::getExtension() {
     
     return _extension;
+}
+
+std::string httpRequest::getExecArg() {
+    
+    return _execArgExtension;
 }
 
 void    httpRequest::setMethod(std::string method) {

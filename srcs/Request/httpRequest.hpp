@@ -22,6 +22,7 @@ class httpRequest
         int             _statusCode;
 
         std::string     _extension;
+        std::string     _execArgExtension;
 
         std::vector<std::string>     chunksSplit( const std::string &str, const std::string &delimiter );
         unsigned int                 hextodec( const std::string &hex );
@@ -63,6 +64,7 @@ class httpRequest
 
         std::string getBody();
         std::string getExtension();
+        std::string getExecArg();
 
         void        setMethod(std::string method);
         std::string getMethod();
