@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: threiss <threiss@studend.42.fr>            +#+  +:+       +#+        */
+/*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:05:16 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/09/27 21:48:35 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/01 17:52:04 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,9 @@ void    printMapConfig(ConfigFile cf) {
 }
 
 int main(int ac, char **av) {
-    if (ac != 2) {
-        std::cout << "ERROR: Wrong number of arguments\n" << std::endl;
-        std::cout << "Usage: ./webserv [Config File]" << std::endl;        
-        return (1); 
-    }
-    std::string path = av[1]; 
+    std::string path = "srcs/nginx.conf";
+    if (ac == 2)
+        std::string path = av[1]; 
     ConfigFile  cf(path);
     // printMapConfig(cf);
     HDE::testServer t(cf);
