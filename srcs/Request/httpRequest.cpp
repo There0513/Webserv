@@ -525,6 +525,10 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
             }
 
         }
+        else {
+            
+            //CONSTRUIRE UNE REPONSE AVEC LE LIEN DANS LE BODY
+        }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
         
