@@ -289,7 +289,7 @@ std::string     httpRequest::readContent() {
             std::cerr << "it's a file\n";
             return readFileContent();
         }
-    
+
         else
             std::cerr << "something else\n";
     }
@@ -524,10 +524,6 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
                 }
             }
 
-        }
-        else {
-            
-            //CONSTRUIRE UNE REPONSE AVEC LE LIEN DANS LE BODY
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
