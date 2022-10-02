@@ -186,11 +186,14 @@ int     HDE::testServer::endOfFile(std::string reqString) {
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
     httpRequest req = _response.request;
     std::string answer = req.getVersion() + " ";
+    // answer += "301 ";
     answer += to_string(req.getStatusCode()) + " ";
     answer += StatusCodeInit(req.getStatusCode()) + "\n Content-Type: ";
+    // answer += StatusCodeInit(301) + "\n Content-Type: ";
     answer += contentType;
     answer += "; charset=UTF-8\nContent-Length:";
     answer += to_string(content.length());
+    // answer += "\nLocation: http://www.google.com/";
     answer += "\nDate: " + getDate();
     answer += "\n\n";
     answer += content;
