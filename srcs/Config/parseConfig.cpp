@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/01 19:56:31 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/02 19:06:14 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,12 +157,12 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root in findPath: " << root << "\n";
             return (root + checkIndex(port, url, root));
         }
         else {
             std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~root + extension in findPath: " << root + extension << "\n";
             return (root + extension); //else we are looking for a file, so append the file to the root directory if any to find the file
         }
     }
@@ -174,10 +174,10 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
             if (url[0] == '/'){  // without double '//' in new url
-                // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
+                std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
                 return (root + url + checkIndex(port, url, root));
             }
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
             return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
@@ -193,7 +193,7 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
 
             // muted because for example url = http://localhost:8080/uploads/index.html was sent to srcs/Server/www/index.html instead of srcs/Server/www/uploads/index.html
             
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
+            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
             return (root + url); 
         }
     }
@@ -234,6 +234,7 @@ std::string     ConfigFile::checkRedirection(int *statusCode, std::string const 
             return url;
         }
         std::string updated_url = redirection.substr(redirection.find_first_of(":") + 1, redirection.size());
+        // std::cout << "updated_url in checkRedirection(): " << updated_url << std::endl;
         return updated_url;
     }
     catch (ConfigFile::ValueNotFoundException &e) {
@@ -484,14 +485,23 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     std::vector<std::string>            indexList;
     std::vector<std::string>::iterator  it;
     std::ifstream                       data;
-
+    // bool index = false;
+// TMP SOLUTION HTM -> HTML:
     try {
-        indexList = getValue(host, url, "index");
+        indexList = getValue(host, url, "index"); // check if there is an 'index = xy.html' inside location
         for (it = indexList.begin(); it != indexList.end(); it++) {
+            // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*it = " << *it << std::endl;
             std::string openContent = root + "/" + *it;
+            // openContent = "srcs/Server/www/test/test.html";
+            // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^openContent (=root/*it): " << openContent << std::endl;
+            if (openContent.find("htm") != std::string::npos && openContent.find("html") == std::string::npos) {
+                openContent += "l";
+                *it += "l";
+                // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^return: " <<  "/" + *it << std::endl;
+            }
             data.open(openContent.c_str());
             if (data) 
-                return ("/" + *it);
+                return("/" + *it);
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
@@ -502,12 +512,21 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     }
     // check autoindex here; if on -> return "" ?:
     try {
-        std::string autoind = getValue(host, "/", "autoindex")[0];
+        // std::string autoind = getValue(host, "/", "autoindex")[0];
+        std::string autoind = getValue(host, url, "autoindex")[0]; // this!!!!!!!!!!!!!!!!!
         return ""; // use autoindex in readContent/readDirectoryAutoindex
     }
     catch (ConfigFile::ValueNotFoundException &e) {
-        std::cout << "no autoindex in configfile\treturn index.html\n";
-        return ("/index.html");
+        std::ifstream                       data;
+
+        std::cout << "no autoindex in configfile: check if ther is an index.html file in folder to return index.html - else return auto\n";
+        std::cout << "check this: " << root + url + "/index.html\n";
+        data.open((root + url + "/index.html").c_str());
+        if (data) {
+            std::cout << "data exists\n";
+            return ("/index.html");
+        }
+        return "";
     }
 }
 

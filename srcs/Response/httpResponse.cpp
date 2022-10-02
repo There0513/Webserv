@@ -178,7 +178,7 @@ void    httpResponse::DELETEMethod() {
 void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
     std::cout << "\tmethod[0]: " << method[0] << std::endl;
-    if (checkCgi() == 1)
+    if (request.getStatusCode() < 400 && checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
         GETMethod();
@@ -209,19 +209,7 @@ int     httpResponse::checkCgi() {
         execArgv = (char **)malloc(sizeof(char *) * 3);
         *(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
         *(execArgv + 2) = NULL;
-            *(execArgv + 0) = (char *)strdup("py");
-
-        if (request.getExtension() == "py")
-            *(execArgv + 0) = (char *)strdup("/usr/bin/python");
-        else if (request.getExtension() == "pl")
-            *(execArgv + 0) = (char *)strdup("/usr/bin/perl");
-        else if (request.getExtension() == "php")
-            *(execArgv + 0) = (char *)strdup("/usr/bin/php");
-        else {
-            request.setStatusCode(203);
-            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
-            return 0;
-        }
+        *(execArgv + 0) = (char *)strdup(request.getExecArg().c_str());
         return 1;
     }
     return 0;
@@ -238,7 +226,6 @@ void    httpResponse::handleCgi() {
 #define	STDOUT_FILENO	1	Standard output.
 #define	STDERR_FILENO	2	Standard error output.
 */
-// https://www.man7.org/linux/man-pages/man3/tmpfile.3.html tmpfile()?!
 // execve 3 arguments: the path to the program, a pointer to a null-terminated array of argument strings, and a pointer to a null-terminated array of environment variable strings
 // execve arg[0] = cgi-bin binary arg[1] = cgi-bin script executable arg[2] = NULL
 int httpResponse::executeCgi() {
@@ -280,32 +267,40 @@ void    httpResponse::handleCgiFile() {
     std::fstream    file;
     std::string     line;
     std::stringstream   sStream;
+    bool            failed = false;
 
     file.open("cgiFile");
 
     if (!file)
         std::cerr << "open cgiFile error.\n";
     else {
-        if (getline(file, line))
-            if (line.find("Content-type")) { // check if Content-type in first line for header
+        if (getline(file, line)) {
+            if (line.find("execve failed.") != std::string::npos) {
+                file.close();
+                setPageContent("execve failed. Please check your cgi parameters in the config-file.");
+                request.setStatusCode(400);
+                failed = true;
+            }
+            if (line.find("Content-type") && failed == false) { // check if Content-type in first line for header
                 size_t points = line.find_first_of(":");
                 std::string key = line.substr(0, points);   // without \n
                 std::string value = line.substr(points + 1, line.length());
                 if (key != "" && value != "")
                     request.setHeaderValue(key, value);
             }
-        while (getline(file, line)) // skip first line if content-type
+        }
+        while (failed == false && getline(file, line)) // skip first line if content-type
             sStream << line + "\n";
     }
     file.close();
-    setPageContent(sStream.str());
+    if (failed == false)
+        setPageContent(sStream.str());
 }
 // https://www.ibm.com/docs/en/netcoolomnibus/8.1?topic=scripts-environment-variables-in-cgi-script
 // https://darrencgi.tripod.com/env_var.html
 void    httpResponse::createEnvVar() {
     std::map<std::string, std::string>  _env;
   
-  // tmp values:
     if (request.getHeaderValue("content-length"))
         _env["CONTENT_LENGTH"] = request.getHeaderValue("content-length")->c_str();
     else
@@ -315,7 +310,7 @@ void    httpResponse::createEnvVar() {
     _env["REDIRECT_STATUS"] = request.getStatusCode();
     _env["REQUEST_METHOD"] = request.getMethod().c_str();
     _env["QUERY_STRING"] = request.getBody().c_str();   // ex.: "first=Anna&last=REISS"
-    _env["SCRIPT_NAME"] = "srcs/Server/www/cgi-bin/python.py";
+    _env["SCRIPT_NAME"] = "srcs/Server/www/cgi-bin/";
     _env["SERVER_NAME"] = "0";
     _env["SERVER_PORT"] = request.getHost().c_str();
     _env["SERVER_PROTOCOL"] = request.getVersion().c_str();
