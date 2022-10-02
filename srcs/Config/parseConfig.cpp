@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/01 19:56:31 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/02 16:13:35 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -502,7 +502,8 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     }
     // check autoindex here; if on -> return "" ?:
     try {
-        std::string autoind = getValue(host, "/", "autoindex")[0];
+        std::string autoind = getValue(host, url, "autoindex")[0];
+        // std::string autoind = getValue(host, "/", "autoindex")[0];
         return ""; // use autoindex in readContent/readDirectoryAutoindex
     }
     catch (ConfigFile::ValueNotFoundException &e) {
