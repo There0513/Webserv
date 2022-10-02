@@ -506,16 +506,20 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
     
     try {
 
-        if (_url.find("error") == std::string::npos) {
-         
+        if (_url.find("error") == std::string::npos || _url.find("errorPages") != std::string::npos) {
+         std::cout << "here\n\n";
             _url = cf.checkRedirection(&_statusCode, _host, _url); // check if there is a redirection
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
+            std::cout << "_url after checkRedirection() + findPath: " << _url << std::endl;
+
             // check if file or directory - else: set error page:
-            std::string path = getenv("PWD");
             // std::cout << "######################_url inside handleURL: " << _url << "\n";
             // std::cout << "_statusCode: "<< _statusCode << std::endl;
+            std::string val = "";
+                // setHeaderValue("Location", val);
 
             if (_url.find("http") == std::string::npos) {   // == no redirection to ex: https://42.fr
+                std::string path = getenv("PWD");
                 struct stat         s;
 
                 // std::cout << "@@@@@@@@@@@@@@path + / + _url: " << path + "/" + _url << std::endl;
@@ -537,7 +541,13 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
                     _url = cf.getErrorPage(_host, "404");
                 }
             }
-
+            else if (_url.find("http") != std::string::npos) {   // == redirection to ex: https://42.fr
+                // set header location to url (status code already changed in checkRedirection())
+                // setHeaderValue("Location", _url);
+                // std::cout << "new Location = " << getHeaderValue("Location") << std::endl;
+            }
+            // else
+            //     setHeaderValue("Location", NULL);
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {
