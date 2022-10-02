@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/02 19:06:14 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/02 21:41:24 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -514,19 +514,22 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     try {
         // std::string autoind = getValue(host, "/", "autoindex")[0];
         std::string autoind = getValue(host, url, "autoindex")[0]; // this!!!!!!!!!!!!!!!!!
-        return ""; // use autoindex in readContent/readDirectoryAutoindex
+        std::cout << "autoind: " << autoind << std::endl;
+        if (autoind == "on")
+            return ""; // use autoindex in readContent/readDirectoryAutoindex
+        return "/index.html";
     }
     catch (ConfigFile::ValueNotFoundException &e) {
         std::ifstream                       data;
 
         std::cout << "no autoindex in configfile: check if ther is an index.html file in folder to return index.html - else return auto\n";
         std::cout << "check this: " << root + url + "/index.html\n";
-        data.open((root + url + "/index.html").c_str());
-        if (data) {
-            std::cout << "data exists\n";
-            return ("/index.html");
-        }
-        return "";
+        // data.open((root + url + "/index.html").c_str());
+        // if (data) {
+        //     std::cout << "data exists\n";
+        //     return ("/index.html");
+        // }
+        return "/index.html";   // send index.html -> if no index-file in folder it will be handled later with 404
     }
 }
 
