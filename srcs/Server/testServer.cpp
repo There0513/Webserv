@@ -191,14 +191,8 @@ void    HDE::testServer::handleResponse(std::string content, std::string content
     answer += contentType;
     answer += "; charset=UTF-8\nContent-Length:";
     answer += to_string(content.length());
-    answer += "\nLocation: ";
-    // if (req.getHeaderValue("Location")->find("0x") == std::string::npos) {
-    //     answer += "\nLocation: " + *req.getHeaderValue("Location");
-    //     std::cout << "location != NULL\n\n\n";
-    // }
-    // else
-    //     answer += "\nLocation: localhost:" + req.getHost();
-    std::cout << "\n****************************************get location header val: " << req.getHeaderValue("Location") << std::endl;
+    if (req.getStatusCode() == 301)
+        answer += "\nLocation: " + req.getUrl();
     answer += "\nDate: " + getDate();
     answer += "\n\n";
     answer += content;

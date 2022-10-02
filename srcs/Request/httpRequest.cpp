@@ -515,8 +515,6 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
             // check if file or directory - else: set error page:
             // std::cout << "######################_url inside handleURL: " << _url << "\n";
             // std::cout << "_statusCode: "<< _statusCode << std::endl;
-            std::string val = "";
-                // setHeaderValue("Location", val);
 
             if (_url.find("http") == std::string::npos) {   // == no redirection to ex: https://42.fr
                 std::string path = getenv("PWD");
@@ -541,11 +539,11 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
                     _url = cf.getErrorPage(_host, "404");
                 }
             }
-            else if (_url.find("http") != std::string::npos) {   // == redirection to ex: https://42.fr
-                // set header location to url (status code already changed in checkRedirection())
-                // setHeaderValue("Location", _url);
-                // std::cout << "new Location = " << getHeaderValue("Location") << std::endl;
-            }
+            // else if (_url.find("http") != std::string::npos) {   // == redirection to ex: https://42.fr     CHECK HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //     // set header location to url (status code already changed in checkRedirection())
+            //     setHeaderValue("Location", _url);
+            //     std::cout << "new Location = " << getHeaderValue("Location") << std::endl;
+            // }
             // else
             //     setHeaderValue("Location", NULL);
         }
