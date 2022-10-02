@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/02 21:41:24 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/02 22:15:32 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -500,8 +500,10 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
                 // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^return: " <<  "/" + *it << std::endl;
             }
             data.open(openContent.c_str());
-            if (data) 
+            if (data) {
+                data.close();
                 return("/" + *it);
+            }
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {

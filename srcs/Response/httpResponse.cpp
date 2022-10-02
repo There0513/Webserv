@@ -13,7 +13,12 @@
 
 httpResponse::httpResponse() {}
 
-httpResponse::~httpResponse() {}
+httpResponse::~httpResponse() {
+    for(int i = 0;execArgv[i];i++)
+        free(execArgv[i]);
+    free(execArgv+2);
+    free(execArgv);
+}
 
 void    httpResponse::setPageContent(std::string content) {
     pageContent = content;
@@ -270,7 +275,6 @@ void    httpResponse::handleCgiFile() {
     bool            failed = false;
 
     file.open("cgiFile");
-
     if (!file)
         std::cerr << "open cgiFile error.\n";
     else {
