@@ -3,12 +3,28 @@
 #include "../Response/httpResponse.hpp"
 #include "../utils/utils.cpp"
 #include <fcntl.h>
+#include <signal.h>
+
+bool gotSignal = false;
 
 HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
 
     _ConfigFile = &cf;
     launch();
 }
+
+void    handleSignal(int sig)
+{
+    printf("signal: %d\n", sig);
+	gotSignal = false;
+	if (sig == 2) {
+		gotSignal = true;
+    }
+	std::cout << "\nBye bye.\n";
+    // _response.~httpResponse();
+	exit(sig);
+}
+HDE::testServer::~testServer() {}
 
 void    HDE::testServer::launch() {
 
@@ -23,6 +39,8 @@ void    HDE::testServer::launch() {
         handler();
         responder();
         //     ... do not time out
+        // return ;
+        signal(SIGINT, handleSignal);
         std::cout << "=============== Done ==================" << std::endl;
     }
 }
@@ -124,6 +142,10 @@ void    HDE::testServer::deal_with_data(int listnum) {
         // }
     // }
 
+    if (gotSignal == true) {
+        _response.~httpResponse();
+        exit(1);
+    }
     if ((_ret = read(connectList[listnum], buffer, 3000000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
@@ -148,20 +170,21 @@ void    HDE::testServer::deal_with_data(int listnum) {
             // std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
         }
         else {
+            if (gotSignal == true) {
+                _response.~httpResponse();
+                exit(1);
+            }
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
-            if (request.isValid(*_ConfigFile) != -1) {
+           if (request.isValid(*_ConfigFile) != -1) {
+                if (gotSignal == true) {
+                    _response.~httpResponse();
+                    exit(1);
+                }
                 std::cout << "\tbefore handleURL_url: " << request.getUrl() << "\n";
                 request.handleURL(*_ConfigFile);
                 std::cout << "\tafter handleURL_url: " << request.getUrl() << "\n";
-                // if redirection configured
-                    // set redirection status code
-                    // create response (page content + content type)
-                // else -> handle method-function (GET, POST, DELETE):
                 _response.request = request;
-                // std::cout << "test request.getUrl(): " << request.getUrl() << std::endl;
-                // std::cout << "test _response.request.getUrl(): " << _response.request.getUrl() << std::endl;
                 _response.methodHandler(_ConfigFile, request.getMethod());
-                // std::cout << "\tafter methodHandler _url: " << request.getUrl() << "\n";
                 handleResponse(_response.getPageContent(), _response.getContentType(), connectList[listnum]);
                 reqString = "";
                 _requestVec.clear();
