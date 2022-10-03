@@ -39,10 +39,8 @@ void    HDE::testServer::launch() {
         accepter();
         handler();
         responder();
-        return;
         //     ... do not time out
         // return ;
-	    // signal(SIGINT, handleSignal);
         signal(SIGINT, handleSignal);
         std::cout << "=============== Done ==================" << std::endl;
     }
