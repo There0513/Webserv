@@ -82,6 +82,8 @@ ConfigFile::ConfigFile(std::string const & configFile) {
     getPorts(); // GET THE LISTEN PORTS IN A VECTOR
 }
 
+ConfigFile::~ConfigFile() {}
+
 ConfigFile & ConfigFile::operator=(ConfigFile const & rhs) {
 
 	this->_content = rhs._content;

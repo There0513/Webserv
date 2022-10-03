@@ -8,7 +8,10 @@ HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 
 
     _ConfigFile = &cf;
     launch();
+    return;
 }
+
+HDE::testServer::~testServer() {}
 
 void    HDE::testServer::launch() {
 
@@ -22,6 +25,7 @@ void    HDE::testServer::launch() {
         accepter();
         handler();
         responder();
+        return;
         //     ... do not time out
         std::cout << "=============== Done ==================" << std::endl;
     }
@@ -135,6 +139,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
         connectList[listnum] = 0;
     }
     else {
+
         buffer[_ret] = '\0';
         for (int i = 0; i < _ret; i++)
             _requestVec.push_back(buffer[i]);

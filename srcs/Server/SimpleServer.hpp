@@ -40,6 +40,7 @@ namespace HDE {
 
         public:
             SimpleServer(int domain, int service, int protocol, std::vector<int> port, u_long interface, int bklog);
+            ~SimpleServer();
             virtual void launch() = 0;
             std::vector<ListeningSocket *> getSocket();
     };

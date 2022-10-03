@@ -21,3 +21,11 @@ HDE::SimpleServer::SimpleServer(int domain, int service, int protocol, std::vect
 }
 
 std::vector<HDE::ListeningSocket *> HDE::SimpleServer::getSocket() { return socket; }
+
+HDE::SimpleServer::~SimpleServer() // Destructor function   
+{
+    for (std::vector<ListeningSocket *>::iterator ite = socket.begin(); ite != socket.end(); ite++)
+    {
+        delete *ite;
+    }
+}  

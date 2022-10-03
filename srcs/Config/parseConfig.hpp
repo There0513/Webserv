@@ -55,6 +55,7 @@ class ConfigFile {
     public:
             //Constructors
             ConfigFile(std::string const & configFile);
+            ~ConfigFile();
          	ConfigFile & operator=(ConfigFile const & rhs);
            
             //Getters

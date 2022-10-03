@@ -18,8 +18,9 @@ namespace HDE
 
         public:
         
-            //Constructor
+            //Constructor && Destructor
             SimpleSocket(int domain, int service, int protocol, int port, u_long interface);
+            virtual ~SimpleSocket() {}
 
             //Virtual function
             virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

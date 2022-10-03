@@ -12,12 +12,11 @@
 
 #include "./Server/testServer.hpp"
 #include "./Config/parseConfig.hpp"
+#include <csignal>
 
 void    printMapConfig(ConfigFile cf) {
     std::map<std::string, std::vector<std::string> > mapConfig = cf.getMap();
     std::map<std::string, std::vector<std::string> >::iterator it = mapConfig.begin();
-
-    // int count = 0;
 
     for (; it != mapConfig.end(); it++) {
         std::cout << it->first << " = " << std::endl;
@@ -29,12 +28,16 @@ void    printMapConfig(ConfigFile cf) {
 }
 
 int main(int ac, char **av) {
-    std::string path = "srcs/nginx.conf";
-    if (ac == 2)
-        std::string path = av[1]; 
-    ConfigFile  cf(path);
-    printMapConfig(cf);
-    HDE::testServer t(cf);
 
+    std::string path = "srcs/nginx.conf";
+
+    if (ac == 2)
+        std::string path = av[1];
+
+    ConfigFile  cf(path);
+    // printMapConfig(cf);
+    HDE::testServer t(cf);
+    
     std::cout << std::endl;
+    return 0;
 }
