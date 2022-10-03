@@ -10,7 +10,7 @@
 Color::Modifier		rouge(Color::FG_RED);
 Color::Modifier		defi(Color::FG_DEFAULT);
 
-httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false) {
+httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false), isCgi(false) {
     // std::cout << "buffer in constructor request: |" << buffer << "|\n";
         isCgi = false;
         parseRequest(buffer, socket);
@@ -255,6 +255,7 @@ std::string     httpRequest::readFileContent() {
     if (!data) {
         std::cout << "Error: " << _url << " could not be opened. Send tmp error page." << std::endl;
         _url = "srcs/Server/www/errorPages/404notfound.html";
+        data.close();
         data.open(_url.c_str());
     }
     

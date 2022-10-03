@@ -11,13 +11,15 @@
 #include <sstream>      // std::stringstream
 
 
-httpResponse::httpResponse() {}
+httpResponse::httpResponse(): execArgv(NULL) {}
 
 httpResponse::~httpResponse() {
-    for(int i = 0;execArgv[i];i++)
-        free(execArgv[i]);
-    free(execArgv+2);
-    free(execArgv);
+    if (execArgv) {
+        for(int i = 0;execArgv[i];i++)
+            free(execArgv[i]);
+        // free(execArgv+2);
+        free(execArgv);
+    }
 }
 
 void    httpResponse::setPageContent(std::string content) {
@@ -212,7 +214,6 @@ int     httpResponse::checkCgi() {
             return 0;
         }
         execArgv = (char **)malloc(sizeof(char *) * 3);
-        *(execArgv + 2) = (char *)malloc(sizeof(char) * 1);
         *(execArgv + 2) = NULL;
         *(execArgv + 0) = (char *)strdup(request.getExecArg().c_str());
         return 1;
@@ -255,6 +256,12 @@ int httpResponse::executeCgi() {
         dup2(newFdOut, STDOUT_FILENO);  // change stdin/stdout with dup2
         if ((execve(execArgv[0], execArgv, _envVar)) < 0) {
             std::cout << "execve failed.\n";
+            if (execArgv) {
+                for(int i = 0;execArgv[i];i++)
+                    free(execArgv[i]);
+                // free(execArgv+2);
+                free(execArgv);
+            }
             exit(1);
         }
     }
