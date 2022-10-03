@@ -13,6 +13,7 @@ namespace HDE {
         
         public:
             ConnectingSocket(int domain, int service, int protocol, int port, u_long interface);
+            virtual ~ConnectingSocket(){}
             int connectToNetwork(int sock, struct sockaddr_in address);
     };
 }

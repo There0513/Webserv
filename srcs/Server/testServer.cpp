@@ -11,6 +11,7 @@ HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 
 
     _ConfigFile = &cf;
     launch();
+    return;
 }
 
 void    handleSignal(int sig)
@@ -24,6 +25,7 @@ void    handleSignal(int sig)
     // _response.~httpResponse();
 	exit(sig);
 }
+HDE::testServer::~testServer() {}
 
 void    HDE::testServer::launch() {
 
@@ -37,6 +39,7 @@ void    HDE::testServer::launch() {
         accepter();
         handler();
         responder();
+        return;
         //     ... do not time out
         // return ;
 	    // signal(SIGINT, handleSignal);
@@ -157,6 +160,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
         connectList[listnum] = 0;
     }
     else {
+
         buffer[_ret] = '\0';
         for (int i = 0; i < _ret; i++)
             _requestVec.push_back(buffer[i]);
