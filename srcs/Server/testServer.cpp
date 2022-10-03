@@ -23,8 +23,6 @@ void    handleSignal(int sig)
 	std::cout << "\nBye bye.\n";
 }
 
-HDE::testServer::~testServer() {}
-
 void    HDE::testServer::launch() {
 
     highSocket = getSocket().back()->getsock();
@@ -36,14 +34,13 @@ void    HDE::testServer::launch() {
         std::cout << "====== Waiting for the connection =====" << std::endl;
 
         accepter();
-        if (gotSignal == true) {
-        
+
+        if (gotSignal == true)
             return;
-        }
+        
         handler();
         responder();
         //     ... do not time out
-        // return ;
         std::cout << "=============== Done ==================" << std::endl;
     }
 }
@@ -67,11 +64,8 @@ void    HDE::testServer::accepter() {
 
     readSocks = select(highSocket + 1, &socks, (fd_set *) 0, (fd_set *) 0, NULL);
 
-    if (gotSignal == true) {
-        
+    if (gotSignal == true)
         return;
-        exit(1);
-    }
 
     if (readSocks < 0) {
         perror("select");
@@ -155,10 +149,6 @@ void    HDE::testServer::deal_with_data(int listnum) {
         // }
     // }
 
-    if (gotSignal == true) {
-        _response.~httpResponse();
-        exit(1);
-    }
     if ((_ret = read(connectList[listnum], buffer, 3000000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
         close(connectList[listnum]);
@@ -184,21 +174,18 @@ void    HDE::testServer::deal_with_data(int listnum) {
             // std::cout << "\t\t\t(endOfFile(reqString) != 1) -> wait till end of request\n";
         }
         else {
-            if (gotSignal == true) {
-                _response.~httpResponse();
-                exit(1);
-            }
+
             httpRequest request(reqString, connectList[listnum]);    // parse request-string into 'httpRequest request'
-           if (request.isValid(*_ConfigFile) != -1) {
-                if (gotSignal == true) {
-                    _response.~httpResponse();
-                    exit(1);
-                }
+           
+            if (request.isValid(*_ConfigFile) != -1) {
+
                 std::cout << "\tbefore handleURL_url: " << request.getUrl() << "\n";
                 request.handleURL(*_ConfigFile);
                 std::cout << "\tafter handleURL_url: " << request.getUrl() << "\n";
+                
                 _response.request = request;
                 _response.methodHandler(_ConfigFile, request.getMethod());
+                
                 handleResponse(_response.getPageContent(), _response.getContentType(), connectList[listnum]);
                 reqString = "";
                 _requestVec.clear();
@@ -221,6 +208,7 @@ int     HDE::testServer::endOfFile(std::string reqString) {
 }
 
 void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
+    
     httpRequest req = _response.request;
     std::string answer = req.getVersion() + " ";
     answer += to_string(req.getStatusCode()) + " ";
@@ -270,11 +258,13 @@ void    HDE::testServer::setNonBlocking(int sock) {
     int opts = fcntl(sock, F_GETFL);
 
     if (opts < 0) {
+        
         perror("fcntl(F_GETFL)");
         exit(EXIT_FAILURE);
     }
     opts = (opts | O_NONBLOCK);
     if (fcntl(sock, F_SETFL, opts) < 0) {
+        
         perror("fcntl(F_SETFL)");
         exit(EXIT_FAILURE);
     }
