@@ -11,7 +11,6 @@ HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 
 
     _ConfigFile = &cf;
     launch();
-    return;
 }
 
 void    handleSignal(int sig)
@@ -22,26 +21,29 @@ void    handleSignal(int sig)
 		gotSignal = true;
     }
 	std::cout << "\nBye bye.\n";
-    // _response.~httpResponse();
-	exit(sig);
 }
+
 HDE::testServer::~testServer() {}
 
 void    HDE::testServer::launch() {
 
     highSocket = getSocket().back()->getsock();
     memset((char *)&connectList, 0, sizeof(connectList));
+    signal(SIGINT, handleSignal);
 
     while (true)
     {
         std::cout << "====== Waiting for the connection =====" << std::endl;
 
         accepter();
+        if (gotSignal == true) {
+        
+            return;
+        }
         handler();
         responder();
         //     ... do not time out
         // return ;
-        signal(SIGINT, handleSignal);
         std::cout << "=============== Done ==================" << std::endl;
     }
 }
@@ -64,6 +66,12 @@ void    HDE::testServer::accepter() {
     buildSelectList();
 
     readSocks = select(highSocket + 1, &socks, (fd_set *) 0, (fd_set *) 0, NULL);
+
+    if (gotSignal == true) {
+        
+        return;
+        exit(1);
+    }
 
     if (readSocks < 0) {
         perror("select");
@@ -97,12 +105,15 @@ void    HDE::testServer::handle_new_connections(HDE::ListeningSocket *socketToHa
     int listnum;
 
     newSocket = accept(socketToHandle->getsock(), (struct sockaddr *)&address, (socklen_t *)&addrlen);
+    
     if (newSocket < 0) {
 
         perror("accept");
         exit(EXIT_FAILURE);
     }
+    
     setNonBlocking(newSocket);
+    
     for (listnum = 0; listnum < 10 && newSocket != -1; listnum++) {
 
         if (connectList[listnum] == 0) {
@@ -123,6 +134,7 @@ void    HDE::testServer::responder() {
     int listnum;
 
     for (listnum = 0; listnum < 10; listnum++) {
+
         if (FD_ISSET(connectList[listnum], &socks))
             deal_with_data(listnum);
         // else

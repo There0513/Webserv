@@ -12,7 +12,6 @@
 
 #include "./Server/testServer.hpp"
 #include "./Config/parseConfig.hpp"
-#include <csignal>
 
 void    printMapConfig(ConfigFile cf) {
     std::map<std::string, std::vector<std::string> > mapConfig = cf.getMap();
@@ -37,7 +36,9 @@ int main(int ac, char **av) {
     ConfigFile  cf(path);
     // printMapConfig(cf);
     HDE::testServer t(cf);
-    
+    cf.~ConfigFile();
+    t.~testServer();
+
     std::cout << std::endl;
     return 0;
 }
