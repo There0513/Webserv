@@ -540,13 +540,6 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
                     _url = cf.getErrorPage(_host, "404");
                 }
             }
-            // else if (_url.find("http") != std::string::npos) {   // == redirection to ex: https://42.fr     CHECK HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //     // set header location to url (status code already changed in checkRedirection())
-            //     setHeaderValue("Location", _url);
-            //     std::cout << "new Location = " << getHeaderValue("Location") << std::endl;
-            // }
-            // else
-            //     setHeaderValue("Location", NULL);
         }
     }
     catch (ConfigFile::ServerNotFoundException &e) {

@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/02 22:15:32 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/03 18:46:21 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,6 @@ bool            ConfigFile::isMethodAllowed(std::string const & host, std::strin
 
 // If methods authorizations, check if the method is allowed
     std::string str = getSection(host, url, "authorized_methods");
-    
     std::map<std::string, std::vector<std::string> >::reverse_iterator it = _content.rbegin();
 
     for (; it != _content.rend(); it++)
@@ -529,8 +528,6 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
         std::cout << "no autoindex in configfile: check if ther is an index.html file in folder to return index.html - else return auto\n";
         std::cout << "check this: " << root + url + "/index.html\n";
         // data.open((root + url + "/index.html").c_str());
-        // if (data) {
-        //     std::cout << "data exists\n";
         //     return ("/index.html");
         // }
         return "/index.html";   // send index.html -> if no index-file in folder it will be handled later with 404

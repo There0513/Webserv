@@ -158,9 +158,9 @@ void    httpResponse::DELETEMethod() {
     std::cout << "\tDELETE method:\n";
     // check if file:
     struct stat s;
-	if (stat(request.getUrl().c_str(), &s) == 0 )
+	if (stat(request.getUrl().c_str(), &s) == 0)
 	{
-		if (s.st_mode & S_IFREG) {   // file
+		if (s.st_mode & S_IFREG && request.getUrl().find("error") == std::string::npos) {   // file
             if (remove(request.getUrl().c_str()) != 0)
                 request.setStatusCode(403);
         }
@@ -175,16 +175,14 @@ void    httpResponse::DELETEMethod() {
     if (request.getStatusCode() < 400)
         request.setUrl("/srcs/Server/www/DeletOK.html");
     else
-        // _url = cf.getErrorPage(_host, "404");
-        // ConfigFile * cf = request.getConfigFile();
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
     setPageContent(request.readContent());
     findContentType(request.getUrl());
 }
 
 void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
-    std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
-    std::cout << "\tmethod[0]: " << method[0] << std::endl;
+    // std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
+    // std::cout << "\tmethod[0]: " << method[0] << std::endl;
     if (request.getStatusCode() < 400 && checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
@@ -194,11 +192,11 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     else if (method[0] == 'D')
         DELETEMethod();
     else {
-        std::cout << "else\n";
+        // std::cout << "else\n";
         request.setStatusCode(400);
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
     }
-    std::cout << "\tend of methodHandler_url: " << request.getUrl() << "\n";
+    // std::cout << "\tend of methodHandler_url: " << request.getUrl() << "\n";
 }
 
 
@@ -316,8 +314,8 @@ void    httpResponse::createEnvVar() {
         _env["CONTENT_LENGTH"] = request.getHeaderValue("content-length")->c_str();
     else
         _env["CONTENT_LENGTH"] = "0";
-    // _env["CONTENT_TYPE"] = request.getHeaderValue("content-type")->c_str();
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
+    _env["PATH_INFO"] = request.getUrl().c_str();
     _env["REDIRECT_STATUS"] = request.getStatusCode();
     _env["REQUEST_METHOD"] = request.getMethod().c_str();
     _env["QUERY_STRING"] = request.getBody().c_str();   // ex.: "first=Anna&last=REISS"
