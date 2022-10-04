@@ -10,11 +10,10 @@
 Color::Modifier		rouge(Color::FG_RED);
 Color::Modifier		defi(Color::FG_DEFAULT);
 
-httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false), isCgi(false) {
+httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), autoI(false), isCgi(false) {
     std::cout << "REQUEST [\n\n" << buffer << "]\n";
         isCgi = false;
         parseRequest(buffer, socket);
-        // std::cout << "end request _url: " << _url << "\n\n\n";
 }
 
 httpRequest::httpRequest(void) {}
@@ -41,8 +40,6 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
         if (start != std::string::npos)
             buffer = buffer.substr(start, end);
 
-        // std::cout << "new buffer for parseHeader = |" << buffer << "|" << std::endl;
-        
         parseHeader(buffer);        
         
         std::string *val = getHeaderValue("Transfer-Encoding:");
@@ -54,7 +51,6 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
         }
 
         else if (contentLength) {     
-            std::cout << "~~~~~~~~~~~~~~\n\n";       
             if ((_method == "GET" || _method == "DELETE") && contentLength->compare("0") != 0)
                 std::cout << rouge << "ERROR: CONTENT LENGTH SHOULD BE 0" << defi << std::endl;
 
@@ -240,7 +236,7 @@ std::string         httpRequest::readDirectoryAutoindex() {
     
     closedir(dir);
     
-    _auto = true;
+    autoI = true;
     
     return page;
 }
@@ -434,8 +430,6 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
     _ConfigFile = &cf;
 
-    // if POST: content-length header
-
     try {   
 
         if (checkFirstLine() == -1) {   // _statusCode changed inside functione
@@ -466,7 +460,7 @@ int     httpRequest::isValid(ConfigFile & cf) {
             std::vector<std::string>::iterator itbeg = cgi.begin();
             
             size_t  pos;
-            for (; itbeg != cgi.end(); itbeg++) { // .py:/usr/bin/python
+            for (; itbeg != cgi.end(); itbeg++) {
                 // std::cout << "\n+\t" << itbeg->c_str() << std::endl;
                 if (itbeg->find(_extension) != std::string::npos) {
                     pos = itbeg->find_first_of(":");
@@ -494,8 +488,7 @@ int     httpRequest::isValid(ConfigFile & cf) {
         _url = cf.getErrorPage(_host, "404");           
         isCgi = false;                                    
     }
-    // min/max length content --> only for POST method (?)
-    return 1;   // all good
+    return 1;
 }
 
 
@@ -507,10 +500,9 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
     try {
 
         if (_url.find("error") == std::string::npos || _url.find("errorPages") != std::string::npos) {
-         std::cout << "here\n\n";
             _url = cf.checkRedirection(&_statusCode, _host, _url); // check if there is a redirection
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
-            std::cout << "_url after checkRedirection() + findPath: " << _url << std::endl;
+            // std::cout << "_url after checkRedirection() + findPath: " << _url << std::endl;
 
             // check if file or directory - else: set error page:
             // std::cout << "######################_url inside handleURL: " << _url << "\n";
@@ -524,10 +516,10 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
                 if (stat((path + "/" + _url).c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
                 {
                     if (s.st_mode & S_IFDIR) {
-                        std::cerr << "~it's a directory\n";
+                        // std::cerr << "~it's a directory\n";
                     }
                     else if (s.st_mode & S_IFREG) {
-                        std::cerr << "~it's a file\n";
+                        // std::cerr << "~it's a file\n";
                     }
                     else {
                         _statusCode = 404;
@@ -579,7 +571,6 @@ void    httpRequest::setHost(std::string buffer) {
         
         _host = buffer.substr(start, tmp.find('\n'));
     }
-    // _host = getHeaderValue("host");
 }
 
 std::string    httpRequest::getHost() {

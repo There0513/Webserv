@@ -39,7 +39,6 @@ void    HDE::httpServer::launch() {
         
         handler();
         responder();
-        //     ... do not time out
         std::cout << "=============== Done ==================" << std::endl;
     }
 }

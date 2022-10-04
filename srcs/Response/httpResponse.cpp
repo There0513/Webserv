@@ -33,7 +33,7 @@ std::string     httpResponse::getPageContent() {
 void    httpResponse::findContentType(std::string url) {
 	_contentType = url.substr(url.rfind(".") + 1, url.size() - url.rfind("."));
     // std::cout << "_contentType: " << _contentType << std::endl;
-    if (request._auto == true || _contentType == "html")  // autoindex
+    if (request.autoI == true || _contentType == "html")  // autoindex
 		_contentType = "text/html";
 	else if (_contentType == "png")
 		_contentType = "image/png";
@@ -58,7 +58,6 @@ void    httpResponse::GETMethod() {
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
-// attention: content-length gross buchstaben kleinbuchstaben!!!!!!!!!!!
 void    httpResponse::POSTMethod(ConfigFile * cf) {
     std::cout << "\tPOSTmethod: request.getHost(): "<<request.getHost() << "\n";
     // std::cout << "request.getHeaderValue(Content-Length): " << *request.getHeaderValue("Content-Length:");
@@ -105,7 +104,6 @@ void    httpResponse::POSTUploads(ConfigFile * cf) {
 
     try {
         std::vector<std::string> upload = cf->getValue(request.getHost(), "", "upload_path");
-        // std::cout << "upload path = " << upload[0] << std::endl;
         path += "/srcs/Server/www" + upload[0];
     }
     catch (ConfigFile::ValueNotFoundException &e) {
@@ -156,12 +154,12 @@ void    httpResponse::POSTcleanUpUploadFile(std::string *fileContent) {
         }
 }
 
-// The DELETE method deletes the specified resource.
+/* The DELETE method deletes the specified resource. */
 void    httpResponse::DELETEMethod() {
     std::cout << "\tDELETE method:\n";
-    // check if file:
+
     struct stat s;
-	if (stat(request.getUrl().c_str(), &s) == 0)
+	if (stat(request.getUrl().c_str(), &s) == 0)    // check if file:
 	{
 		if (s.st_mode & S_IFREG && request.getUrl().find("error") == std::string::npos) {   // file
             if (remove(request.getUrl().c_str()) != 0)
@@ -174,8 +172,8 @@ void    httpResponse::DELETEMethod() {
 	}
 	else
             request.setStatusCode(403);
-    // create response  or error handling if remove didn't work
-    if (request.getStatusCode() < 400)
+    
+    if (request.getStatusCode() < 400)  // create response or error handling if remove didn't work
         request.setUrl("/srcs/Server/www/DeletOK.html");
     else
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "404"));
@@ -240,7 +238,6 @@ int httpResponse::executeCgi() {
     int     status;
     int     newFdOut;
     
-    // std::cout << "url in executeCgi = " << request.getUrl() << "\n";
     if (request.getUrl()[0] == '/')
         *(execArgv + 1) = (char *)strdup(request.getUrl().substr(1, request.getUrl().size()).c_str());
     else
@@ -259,7 +256,6 @@ int httpResponse::executeCgi() {
             if (execArgv) {
                 for(int i = 0;execArgv[i];i++)
                     free(execArgv[i]);
-                // free(execArgv+2);
                 free(execArgv);
             }
             exit(1);

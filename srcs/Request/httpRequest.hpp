@@ -8,9 +8,9 @@
 class httpRequest
 {
     private:
-        std::string     _method;     // -> first line
-        std::string     _url;        // -> first line
-        std::string     _version;    // -> first line
+        std::string     _method;
+        std::string     _url;
+        std::string     _version;
 
 	    std::vector<std::pair<std::string, std::string > >  _header;
         std::string     _host;      // -> host from body request
@@ -36,7 +36,6 @@ class httpRequest
         httpRequest();
         ~httpRequest();
 
-        bool        _auto;// tmp public
         std::string     readContent();
         std::string     readFileContent();
         std::string     readDirectoryAutoindex();
@@ -50,6 +49,7 @@ class httpRequest
         void            parseBody(std::string *contentLength);
         int             isValid(ConfigFile & cf);
         void            handleURL(ConfigFile & cf);
+        bool            autoI;
         bool            isCgi;
 
 /* SETTERS - GETTERS */
