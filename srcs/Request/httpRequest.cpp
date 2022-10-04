@@ -11,10 +11,10 @@ Color::Modifier		rouge(Color::FG_RED);
 Color::Modifier		defi(Color::FG_DEFAULT);
 
 httpRequest::httpRequest(std::string buffer, long socket): _method(""), _url(""), _version(""), _body(""), _statusCode(200), _auto(false), isCgi(false) {
-    // std::cout << "buffer in constructor request: |" << buffer << "|\n";
+    std::cout << "REQUEST [\n\n" << buffer << "]\n";
         isCgi = false;
         parseRequest(buffer, socket);
-        std::cout << "end request _url: " << _url << "\n\n\n";
+        // std::cout << "end request _url: " << _url << "\n\n\n";
 }
 
 httpRequest::httpRequest(void) {}
@@ -45,8 +45,8 @@ void    httpRequest::parseRequest(std::string buffer, long socket) {
         
         parseHeader(buffer);        
         
-        std::string *val = getHeaderValue("Transfer-Encoding");
-        std::string *contentLength = getHeaderValue("Content-Length");
+        std::string *val = getHeaderValue("Transfer-Encoding:");
+        std::string *contentLength = getHeaderValue("Content-Length:");
 
         if (val) {
             if (val->find("chunked") != std::string::npos)
@@ -96,9 +96,9 @@ void    httpRequest::parseHeader(std::string buffer) {
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
         line = buffer.substr(0, buffer.find("\r\n"));
     }
-    // print _header:
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
-        std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
+    // print request _header:
+    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
+    //     std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
 }
 
 void    httpRequest::parseBody(std::string *contentLength) {  // already set in parseRequest
@@ -329,7 +329,7 @@ std::string httpRequest::read_line( long socket, bool incl_endl = true ) {
     int n;
     std::string line;
     char c = '\0';
- 
+    
     while ( ( n = recv( socket, &c, 1, 0 ) ) > 0 ) {
  
         if ( c == '\r' ) {
@@ -356,7 +356,6 @@ std::string httpRequest::read_line( long socket, bool incl_endl = true ) {
  
         line += c;
     }
- 
     return line;
 }
 
@@ -395,7 +394,7 @@ unsigned int httpRequest::read_chunk_size( long socket ) {
  
         line = read_line( socket );
         chunk_header = chunksSplit( line, ";" );
- 
+
         return hextodec( chunk_header.at( 0 ) ); 
 }
 
@@ -425,7 +424,7 @@ std::string httpRequest::decodeChunks( long socket ) {
  
         // read until the end of chunked data
         while ( read_line( socket, true ).size() > 2 ) ;
- 
+
         return chunked_data;
 }
 

@@ -13,7 +13,7 @@ namespace HDE
     
         public:
             ListeningSocket(int domain, int service, int protocol, int port, u_long interface, int backlog);
-            virtual ~ListeningSocket(){}
+            ~ListeningSocket(){}
             void startListening();
     };
 }

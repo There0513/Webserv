@@ -49,7 +49,7 @@ namespace HDE {
 
         public:
             testServer(ConfigFile cf);
-            ~testServer();
+            ~testServer() {}
             
             ConfigFile* _ConfigFile; // Configuration file defined in the main
             void        launch();

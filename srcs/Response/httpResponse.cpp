@@ -61,26 +61,29 @@ void    httpResponse::GETMethod() {
 // attention: content-length gross buchstaben kleinbuchstaben!!!!!!!!!!!
 void    httpResponse::POSTMethod(ConfigFile * cf) {
     std::cout << "\tPOSTmethod: request.getHost(): "<<request.getHost() << "\n";
-    std::cout << "request.getHeaderValue(Content-Length): " << *request.getHeaderValue("Content-Length:");
+    // std::cout << "request.getHeaderValue(Content-Length): " << *request.getHeaderValue("Content-Length:");
     try
     {
-        std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
-        std::cout << "max_size: " << max_size << std::endl;
-        if (max_size.size() < (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:")) {
-            // error
-            request.setStatusCode(413);
-            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
-        }
-        else if (max_size.size() == (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:"))
-        {
-            for (int i = 0; i < (int)max_size.size(); i++)
+        if (request.getHeaderValue("Content-Length:") != NULL) {
+            std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
+            std::cout << "max_size: " << max_size << std::endl;
+            std::cout << "request.getBody().size(): " << request.getBody().size() << std::endl;
+            if (max_size.size() < (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:")) {
+                // error
+                request.setStatusCode(413);
+                request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+            }
+            else if (max_size.size() == (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:"))
             {
-                if (max_size.at(i) > (*request.getHeaderValue("Content-Length:")).at(i))
-                    break ;
-                else if (max_size.at(i) < (*request.getHeaderValue("Content-Length:")).at(i))
+                for (int i = 0; i < (int)max_size.size(); i++)
                 {
-                    request.setStatusCode(413);
-                    request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+                    if (max_size.at(i) > (*request.getHeaderValue("Content-Length:")).at(i))
+                        break ;
+                    else if (max_size.at(i) < (*request.getHeaderValue("Content-Length:")).at(i))
+                    {
+                        request.setStatusCode(413);
+                        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+                    }
                 }
             }
         }
