@@ -6,12 +6,12 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 16:02:31 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/03 17:08:29 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/04 16:35:56 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef testServer_HPP
-# define testServer_HPP
+#ifndef HTTPSERVER_HPP
+# define HTTPSERVER_HPP
 
 #include <stdio.h>
 #include "SimpleServer.hpp"
@@ -21,7 +21,7 @@
 
 namespace HDE {
 
-    class testServer : public SimpleServer {
+    class httpServer : public SimpleServer {
 
         private:
             char    buffer[3000001];
@@ -48,8 +48,8 @@ namespace HDE {
 
 
         public:
-            testServer(ConfigFile cf);
-            ~testServer() {}
+            httpServer(ConfigFile cf);
+            ~httpServer() {}
             
             ConfigFile* _ConfigFile; // Configuration file defined in the main
             void        launch();

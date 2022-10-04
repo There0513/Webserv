@@ -64,7 +64,7 @@ void    httpResponse::POSTMethod(ConfigFile * cf) {
     // std::cout << "request.getHeaderValue(Content-Length): " << *request.getHeaderValue("Content-Length:");
     try
     {
-        if (request.getHeaderValue("Content-Length:") != NULL) {
+        // if (request.getHeaderValue("Content-Length:") != NULL) {
             std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
             std::cout << "max_size: " << max_size << std::endl;
             std::cout << "request.getBody().size(): " << request.getBody().size() << std::endl;
@@ -86,7 +86,7 @@ void    httpResponse::POSTMethod(ConfigFile * cf) {
                     }
                 }
             }
-        }
+        // }
     }
     catch(const std::exception& e)
     {
@@ -195,7 +195,6 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
     else if (method[0] == 'D')
         DELETEMethod();
     else {
-        // std::cout << "else\n";
         request.setStatusCode(400);
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
     }

@@ -4,7 +4,7 @@ SRCS	=	srcs/main.cpp\
 			srcs/Sockets/BindingSocket.cpp\
 			srcs/Sockets/ListeningSocket.cpp\
 			srcs/Server/SimpleServer.cpp\
-			srcs/Server/testServer.cpp\
+			srcs/Server/httpServer.cpp\
 			srcs/Config/parseConfig.cpp\
 			srcs/Request/httpRequest.cpp\
 			srcs/Response/httpResponse.cpp

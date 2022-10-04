@@ -6,11 +6,11 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:05:16 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/03 15:11:49 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/04 16:34:43 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./Server/testServer.hpp"
+#include "./Server/httpServer.hpp"
 #include "./Config/parseConfig.hpp"
 
 void    printMapConfig(ConfigFile cf) {
@@ -35,7 +35,7 @@ int main(int ac, char **av) {
 
     ConfigFile  cf(path);
     // printMapConfig(cf);
-    HDE::testServer t(cf);
+    HDE::httpServer t(cf);
 
     std::cout << std::endl;
     return 0;

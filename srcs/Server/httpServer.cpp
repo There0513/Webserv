@@ -1,4 +1,4 @@
-#include "testServer.hpp"
+#include "httpServer.hpp"
 #include "../Request/httpRequest.hpp"
 #include "../Response/httpResponse.hpp"
 #include "../utils/utils.cpp"
@@ -7,7 +7,7 @@
 
 bool gotSignal = false;
 
-HDE::testServer::testServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
+HDE::httpServer::httpServer(ConfigFile cf) : SimpleServer(AF_INET, SOCK_STREAM, 0, cf.portsToOpen, INADDR_ANY, 10) {
 
     _ConfigFile = &cf;
     launch();
@@ -22,7 +22,7 @@ void    handleSignal(int sig)
 	std::cout << "\nBye bye.\n";
 }
 
-void    HDE::testServer::launch() {
+void    HDE::httpServer::launch() {
 
     highSocket = getSocket().back()->getsock();
     memset((char *)&connectList, 0, sizeof(connectList));
@@ -55,7 +55,7 @@ void    HDE::testServer::launch() {
     Once it returns, the original fd_set had been modified so that it reflects the state of why select() woke up
     ex: if fd 4 was originally in the fd set and then it became readable, the fd set contains fd 4 in it */
 
-void    HDE::testServer::accepter() {
+void    HDE::httpServer::accepter() {
 
     int readSocks;          // nb of sockets ready for reading
 
@@ -82,7 +82,7 @@ void    HDE::testServer::accepter() {
     If a client is trying to connect to our listening socket, select() will consider that as a socket readable
     Thus if the listening socket is part of the fd_set, we have to accept a new connection*/
 
-void    HDE::testServer::handler() {
+void    HDE::httpServer::handler() {
 
     for (size_t i = 0; i < getSocket().size(); i++) {
         
@@ -91,7 +91,7 @@ void    HDE::testServer::handler() {
     }
 }
 
-void    HDE::testServer::handle_new_connections(HDE::ListeningSocket *socketToHandle) {
+void    HDE::httpServer::handle_new_connections(HDE::ListeningSocket *socketToHandle) {
 
     struct sockaddr_in address = socketToHandle->getaddress();
     int addrlen = sizeof(address);
@@ -123,30 +123,17 @@ void    HDE::testServer::handle_new_connections(HDE::ListeningSocket *socketToHa
 /* Now check connect list for available data
     Run through our sockets and check to see if anything happened with them, if so service them */
 
-void    HDE::testServer::responder() {
+void    HDE::httpServer::responder() {
     int listnum;
 
     for (listnum = 0; listnum < 10; listnum++) {
 
         if (FD_ISSET(connectList[listnum], &socks))
             deal_with_data(listnum);
-        // else
-            // std::cout << "nothing to deal with.\n";
     }
 }
 
-void    HDE::testServer::deal_with_data(int listnum) {
-    // while ((_ret = read(connectList[listnum], buffer, 3000000)) >= 0) {
-        // cp _ret bites into a buffer 
-        // example: new char[3000000];
-        // memcpy _ret bytes dans le tableau de char
-        // push_back le tableau dans le vector
-
-        // for (int i = 0; buffer[i]; i++) {
-        //     // std::cout << buffer[i];
-        //     _requestVec.push_back(buffer[i]);
-        // }
-    // }
+void    HDE::httpServer::deal_with_data(int listnum) {
 
     if ((_ret = read(connectList[listnum], buffer, 3000000)) < 0) {
         std::cout << "Connexion failed" << std::endl; // connection closed, close this end
@@ -178,9 +165,9 @@ void    HDE::testServer::deal_with_data(int listnum) {
            
             if (request.isValid(*_ConfigFile) != -1) {
 
-                std::cout << "\tbefore handleURL _url: " << request.getUrl() << "\n";
+                // std::cout << "\tbefore handleURL _url: " << request.getUrl() << "\n";
                 request.handleURL(*_ConfigFile);
-                std::cout << "\tafter handleURL _url: " << request.getUrl() << "\n";
+                // std::cout << "\tafter handleURL _url: " << request.getUrl() << "\n";
                 
                 _response.request = request;
                 _response.methodHandler(_ConfigFile, request.getMethod());
@@ -193,7 +180,7 @@ void    HDE::testServer::deal_with_data(int listnum) {
     }
 }
 
-int     HDE::testServer::endOfFile(std::string reqString) {
+int     HDE::httpServer::endOfFile(std::string reqString) {
     size_t first;
     size_t  sec;
     
@@ -206,7 +193,7 @@ int     HDE::testServer::endOfFile(std::string reqString) {
     return 0;
 }
 
-void    HDE::testServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
+void    HDE::httpServer::handleResponse(std::string content, std::string contentType, int connectListSocket) {
     
     httpRequest req = _response.request;
     std::string answer = req.getVersion() + " ";
@@ -225,7 +212,7 @@ void    HDE::testServer::handleResponse(std::string content, std::string content
     write(connectListSocket, answer.c_str(), answer.size());
 }
 
-void    HDE::testServer::buildSelectList() {
+void    HDE::httpServer::buildSelectList() {
 
     int listnum; // current items in connect list for the FOR loop
 
@@ -252,7 +239,7 @@ void    HDE::testServer::buildSelectList() {
     }
 }
 
-void    HDE::testServer::setNonBlocking(int sock) {
+void    HDE::httpServer::setNonBlocking(int sock) {
 
     int opts = fcntl(sock, F_GETFL);
 
