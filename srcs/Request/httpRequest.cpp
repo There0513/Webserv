@@ -92,15 +92,10 @@ void    httpRequest::parseHeader(std::string buffer) {
         buffer.erase(0, line.length() + 1);     // delete first line from buffer
         line = buffer.substr(0, buffer.find("\r\n"));
     }
-    // print request _header:
-    // for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _header.begin(); it != _header.end(); ++it)
-    //     std::cout << "\tkey: " << it->first << " : val: " << it->second << "\n";
 }
 
 void    httpRequest::parseBody(std::string *contentLength) {  // already set in parseRequest
     
-    // std::cout << "_body: |" << _body << "|" << std::endl;
-
     size_t len = atoi((*contentLength).c_str());
 
     if (_body.length() != len) // if 'Content-Length' != body length, fill with NULLS or truncate to len
@@ -124,9 +119,6 @@ void    httpRequest::getFirstLine(std::string str, std::string deli = " ") {
     end = str.find("\r\n", start);
     if (end != -1)
         _version = str.substr(start, end - start);
-    std::cout << "_method: |" << _method << "|" << std::endl;
-    std::cout << "_url: |" << _url << "|" << std::endl;
-    std::cout << "_version: |" << _version << "|" << std::endl;
 }
 
 int     httpRequest::checkFirstLine() {
@@ -461,11 +453,9 @@ int     httpRequest::isValid(ConfigFile & cf) {
             
             size_t  pos;
             for (; itbeg != cgi.end(); itbeg++) {
-                // std::cout << "\n+\t" << itbeg->c_str() << std::endl;
                 if (itbeg->find(_extension) != std::string::npos) {
                     pos = itbeg->find_first_of(":");
                     _execArgExtension = itbeg->substr(pos + 1, itbeg->size());
-                    // std::cout << "_execArgExtension: " << _execArgExtension << std::endl;
                 }
             }
             isCgi = true;
@@ -494,25 +484,16 @@ int     httpRequest::isValid(ConfigFile & cf) {
 
 void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding route
 
-    // std::cout << "_url beginning of handleURL: " << _url << "\n";
-    // std::cout << "in handleURL  _host: " << _host << "\n";
-    
     try {
 
         if (_url.find("error") == std::string::npos || _url.find("errorPages") != std::string::npos) {
             _url = cf.checkRedirection(&_statusCode, _host, _url); // check if there is a redirection
             _url = cf.findPath(_host, _url); // find the path to the right file inside the server
-            // std::cout << "_url after checkRedirection() + findPath: " << _url << std::endl;
-
-            // check if file or directory - else: set error page:
-            // std::cout << "######################_url inside handleURL: " << _url << "\n";
-            // std::cout << "_statusCode: "<< _statusCode << std::endl;
 
             if (_url.find("http") == std::string::npos) {   // == no redirection to ex: https://42.fr
                 std::string path = getenv("PWD");
                 struct stat         s;
 
-                // std::cout << "@@@@@@@@@@@@@@path + / + _url: " << path + "/" + _url << std::endl;
                 if (stat((path + "/" + _url).c_str(), &s) == 0) //Get file attributes for FILE and put them in 's'.
                 {
                     if (s.st_mode & S_IFDIR) {
@@ -541,8 +522,6 @@ void    httpRequest::handleURL(ConfigFile & cf) {   // find url-corresponding ro
         
         std::cout << rouge << e.what() << defi << std::endl;
     }
-
-    // std::cout << "_url end of handleURL: " << _url << "\n";
 }
 
 /* ======================================= SETTERS - GETTERS ===========================================================*/

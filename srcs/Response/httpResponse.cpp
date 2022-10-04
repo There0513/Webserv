@@ -32,7 +32,6 @@ std::string     httpResponse::getPageContent() {
 
 void    httpResponse::findContentType(std::string url) {
 	_contentType = url.substr(url.rfind(".") + 1, url.size() - url.rfind("."));
-    // std::cout << "_contentType: " << _contentType << std::endl;
     if (request.autoI == true || _contentType == "html")  // autoindex
 		_contentType = "text/html";
 	else if (_contentType == "png")
@@ -47,49 +46,40 @@ void    httpResponse::findContentType(std::string url) {
 		_contentType = "image/bmp";
 	else
 		_contentType = "text/plain";
-    // std::cout << "_contentType: " << _contentType << std::endl;
 }
 
             /* handle methods */
 void    httpResponse::GETMethod() {
-    std::cout << "\tGET method:\n";
     setPageContent(request.readContent());
     findContentType(request.getUrl());
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 void    httpResponse::POSTMethod(ConfigFile * cf) {
-    std::cout << "\tPOSTmethod: request.getHost(): "<<request.getHost() << "\n";
-    // std::cout << "request.getHeaderValue(Content-Length): " << *request.getHeaderValue("Content-Length:");
     try
     {
-        // if (request.getHeaderValue("Content-Length:") != NULL) {
-            std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
-            std::cout << "max_size: " << max_size << std::endl;
-            std::cout << "request.getBody().size(): " << request.getBody().size() << std::endl;
-            if (max_size.size() < (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:")) {
-                // error
-                request.setStatusCode(413);
-                request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
-            }
-            else if (max_size.size() == (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:"))
+        std::string max_size = cf->getValue(request.getHost(), "", "client_max_body_size")[0];
+        if (max_size.size() < (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:")) {
+            request.setStatusCode(413);
+            request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
+        }
+        else if (max_size.size() == (*request.getHeaderValue("Content-Length:")).size() && !request.getHeaderValue("Content-Disposition:"))
+        {
+            for (int i = 0; i < (int)max_size.size(); i++)
             {
-                for (int i = 0; i < (int)max_size.size(); i++)
+                if (max_size.at(i) > (*request.getHeaderValue("Content-Length:")).at(i))
+                    break ;
+                else if (max_size.at(i) < (*request.getHeaderValue("Content-Length:")).at(i))
                 {
-                    if (max_size.at(i) > (*request.getHeaderValue("Content-Length:")).at(i))
-                        break ;
-                    else if (max_size.at(i) < (*request.getHeaderValue("Content-Length:")).at(i))
-                    {
-                        request.setStatusCode(413);
-                        request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
-                    }
+                    request.setStatusCode(413);
+                    request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
                 }
             }
-        // }
+        }
     }
     catch(const std::exception& e)
     {
-        std::cout << "no max_size given - all ok\n";
+        // std::cout << "no max_size given - all ok\n";
     }
     
     // check if upload:
@@ -134,17 +124,14 @@ void    httpResponse::POSTcleanUpUploadFile(std::string *fileContent) {
 
         if ((pos = fileContent->find_first_of("WebKitFormBoundary")) != std::string::npos && pos < 100) { // pos < 100 to be sure it is the header --- and not the one at the end
             pos = fileContent->find_first_of("\n");
-            std::cout << "pos \\n: " << pos << std::endl;
             *fileContent = fileContent->substr(pos + 1, fileContent->size());
         }
         if ((pos = fileContent->find_first_of("Content-Disposition")) != std::string::npos) {
             pos = fileContent->find_first_of("\n");
-            std::cout << "pos \\n: " << pos << std::endl;
             *fileContent = fileContent->substr(pos + 1, fileContent->size());
         }
         if ((pos = fileContent->find_first_of("Content-Type")) != std::string::npos) {
             pos = fileContent->find_first_of("\n");
-            std::cout << "pos \\n: " << pos << std::endl;
             *fileContent = fileContent->substr(pos + 1, fileContent->size());
         }
         if ((pos = fileContent->find_last_of("------WebKitFormBoundary")) != std::string::npos) {
@@ -156,7 +143,6 @@ void    httpResponse::POSTcleanUpUploadFile(std::string *fileContent) {
 
 /* The DELETE method deletes the specified resource. */
 void    httpResponse::DELETEMethod() {
-    std::cout << "\tDELETE method:\n";
 
     struct stat s;
 	if (stat(request.getUrl().c_str(), &s) == 0)    // check if file:
@@ -182,8 +168,6 @@ void    httpResponse::DELETEMethod() {
 }
 
 void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
-    // std::cout << "\tmethodHandler_url: " << request.getUrl() << "\nmethod: " << method << std::endl;
-    // std::cout << "\tmethod[0]: " << method[0] << std::endl;
     if (request.getStatusCode() < 400 && checkCgi() == 1)
         handleCgi();
     else if (method[0] == 'G')
@@ -196,7 +180,6 @@ void        httpResponse::methodHandler(ConfigFile * cf, std::string method) {
         request.setStatusCode(400);
         request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
     }
-    // std::cout << "\tend of methodHandler_url: " << request.getUrl() << "\n";
 }
 
 
@@ -206,7 +189,7 @@ int     httpResponse::checkCgi() {
 
     if (request.isCgi == true && request.getMethod() != "DELETE") {
         if (stat(request.getUrl().c_str(), &sb) != 0) {  // path exists
-            std::cout << "path does not exist in checkCgi\n";
+            // std::cout << "path does not exist in checkCgi\n";
             request.setStatusCode(400);
             request.setUrl(request.getConfigFile()->getErrorPage(request.getHost(), "400"));
             return 0;

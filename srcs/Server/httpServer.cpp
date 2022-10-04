@@ -164,9 +164,7 @@ void    HDE::httpServer::deal_with_data(int listnum) {
            
             if (request.isValid(*_ConfigFile) != -1) {
 
-                // std::cout << "\tbefore handleURL _url: " << request.getUrl() << "\n";
                 request.handleURL(*_ConfigFile);
-                // std::cout << "\tafter handleURL _url: " << request.getUrl() << "\n";
                 
                 _response.request = request;
                 _response.methodHandler(_ConfigFile, request.getMethod());

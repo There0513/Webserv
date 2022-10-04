@@ -6,7 +6,7 @@
 /*   By: threiss <threiss@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 00:28:11 by cmarteau          #+#    #+#             */
-/*   Updated: 2022/10/03 18:46:21 by threiss          ###   ########.fr       */
+/*   Updated: 2022/10/04 17:35:03 by threiss          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,8 +154,6 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
         return url;
 
     try {
-    // std::cout << "\t\tfindpath start:\nport: " << port << "\n\n";
-    // std::cout << "\t\turl: " << url << "\n\n\n";
         std::string root = getValue(port, url, "root")[0];
 
         if (url.find(".") == std::string::npos) { //if there is no extension, it is a directory, so go to the root directory if any to find the index.html
@@ -176,26 +174,15 @@ std::string     ConfigFile::findPath(std::string const & port, std::string const
             if (url.size() == 1)
                 return (root + checkIndex(port, url, root));
             if (url[0] == '/'){  // without double '//' in new url
-                std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + url + 'checkIndex') in findPath: " << root + url + checkIndex(port, url, root) << "\n";
                 return (root + url + checkIndex(port, url, root));
             }
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch if: return (root + / + url + 'checkIndex') in findPath: " << root + "/" + url + checkIndex(port, url, root) << "\n";
             return (root + "/" + url + checkIndex(port, url, root));
         }
         else {
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else in findPath:\n";
             if ((url.find("/"+root)) != std::string::npos) {
-                // std::cout << "return just URL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-> url.substr(root.size() + 1, url.size()): " << url.substr(root.size() + 1, url.size()) << std::endl;
                 return url;
-                // return url.substr(root.size() + 1, url.size());
             }
-            // std::string extension = url.substr(url.find_last_of("/"), url.length() - url.find_last_of("/"));     // muted (theresa)
-            // std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + extension in findPath: " << root + extension << "\n";
-            // return (root + extension);                                                                           // muted (theresa)
-
-            // muted because for example url = http://localhost:8080/uploads/index.html was sent to srcs/Server/www/index.html instead of srcs/Server/www/uploads/index.html
             
-            std::cout << "\t\t~~~~~~~~~~~~~~~~~~~in catch else: root + url in findPath: " << root + url << "\n";
             return (root + url); 
         }
     }
@@ -235,7 +222,6 @@ std::string     ConfigFile::checkRedirection(int *statusCode, std::string const 
             return url;
         }
         std::string updated_url = redirection.substr(redirection.find_first_of(":") + 1, redirection.size());
-        // std::cout << "updated_url in checkRedirection(): " << updated_url << std::endl;
         return updated_url;
     }
     catch (ConfigFile::ValueNotFoundException &e) {
@@ -253,7 +239,6 @@ std::string     ConfigFile::getErrorPage(std::string const & host, std::string c
         std::vector<std::string>::iterator it = errorPage.begin();
         for (;it != errorPage.end(); it++) {
             if (it->find(error) != std::string::npos){
-                // std::cout << "srcs/Server/www/errorPages + *it = |" << "srcs/Server/www/errorPages" + *it << std::endl;
                 return ("srcs/Server/www/errorPages" + *it);
             }
         }
@@ -486,19 +471,14 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     std::vector<std::string>            indexList;
     std::vector<std::string>::iterator  it;
     std::ifstream                       data;
-    // bool index = false;
-// TMP SOLUTION HTM -> HTML:
+
     try {
         indexList = getValue(host, url, "index"); // check if there is an 'index = xy.html' inside location
         for (it = indexList.begin(); it != indexList.end(); it++) {
-            // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*it = " << *it << std::endl;
             std::string openContent = root + "/" + *it;
-            // openContent = "srcs/Server/www/test/test.html";
-            // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^openContent (=root/*it): " << openContent << std::endl;
             if (openContent.find("htm") != std::string::npos && openContent.find("html") == std::string::npos) {
                 openContent += "l";
                 *it += "l";
-                // std::cout << "\t\t^^^^^^^^^^^^^^^^^^^^return: " <<  "/" + *it << std::endl;
             }
             data.open(openContent.c_str());
             if (data) {
@@ -513,10 +493,8 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     catch (ConfigFile::ValueNotFoundException &e) {
         std::cout << red << e.what() << def << std::endl;
     }
-    // check autoindex here; if on -> return "" ?:
     try {
-        // std::string autoind = getValue(host, "/", "autoindex")[0];
-        std::string autoind = getValue(host, url, "autoindex")[0]; // this!!!!!!!!!!!!!!!!!
+        std::string autoind = getValue(host, url, "autoindex")[0];
         std::cout << "autoind: " << autoind << std::endl;
         if (autoind == "on")
             return ""; // use autoindex in readContent/readDirectoryAutoindex
@@ -525,11 +503,6 @@ std::string ConfigFile::checkIndex(std::string const & host, std::string const &
     catch (ConfigFile::ValueNotFoundException &e) {
         std::ifstream                       data;
 
-        std::cout << "no autoindex in configfile: check if ther is an index.html file in folder to return index.html - else return auto\n";
-        std::cout << "check this: " << root + url + "/index.html\n";
-        // data.open((root + url + "/index.html").c_str());
-        //     return ("/index.html");
-        // }
         return "/index.html";   // send index.html -> if no index-file in folder it will be handled later with 404
     }
 }
